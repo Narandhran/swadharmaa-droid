@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.swadharmaa">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <application
+        android:name=".general.Application"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:largeHeap="true"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true"
+        android:windowSoftInputMode="adjustPan"
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning"
+        tools:targetApi="m">
+        <activity
+            android:name=".Splash"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/SplashTheme"
+            tools:ignore="LockedOrientationActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".user.Login"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".user.Verification"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".user.Register"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".Home"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".user.Profile"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/ProfileTheme"
+            android:windowSoftInputMode="stateAlwaysHidden"
+            tools:ignore="LockedOrientationActivity" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true"
+            tools:replace="android:authorities">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"
+                tools:replace="android:resource" />
+        </provider>
+
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".category.AddCategory"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".book.AddBook"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".family.personal.AddPersonal"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".family.familyInfo.AddFamilyInfo"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".family.familytree.AddFamilyTree"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".family.shraddha.Shraddha"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".family.personal.Personal"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".family.familyInfo.FamilyInfo"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".family.familytree.FamilyTree"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".family.shraddha.gothram.AddGothram"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".family.shraddha.name.AddName"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".family.shraddha.samayal.AddSamayal"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".family.shraddha.thithi.AddThithi"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".family.shraddha.vazhakkam.AddVazhakkam"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".reader.Reader"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".book.Book"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".discover.SeeAll"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".discover.Search"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".favourite.Favourite"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden|adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+
+    </application>
+
+</manifest>
