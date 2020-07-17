@@ -43,7 +43,8 @@ class CategoryAdapter(
                     "rootPath",
                     activity.applicationContext
                 ) + Enums.Category.value + data.thumbnail
-            ).placeholder(R.drawable.img_placeholder).into(holder.imgCategory)
+            ).placeholder(R.drawable.img_placeholder)
+                .fit().into(holder.imgCategory)
 
             holder.cardCategory.setOnClickListener {
                 data = dataList[position]

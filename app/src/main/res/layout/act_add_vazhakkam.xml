@@ -51,7 +51,6 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/lay_tharpana_koorcham"
                 style="@style/MaterialInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -80,7 +79,6 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/lay_pindam_count"
                 style="@style/MaterialInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -109,7 +107,6 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/lay_krusaram"
                 style="@style/MaterialInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -139,7 +136,6 @@
 
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/lay_pundra_dharanam"
                 style="@style/MaterialInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -154,6 +150,31 @@
                     android:drawableEnd="@drawable/custom_downarrow"
                     android:drawableTint="@color/theme_dark_grey"
                     android:focusable="false"
+                    android:fontFamily="@font/lato_regular"
+                    android:imeOptions="actionDone"
+                    android:inputType="text|textNoSuggestions"
+                    android:maxLength="32"
+                    android:maxLines="1"
+                    android:paddingStart="1dp"
+                    android:paddingEnd="1dp"
+                    android:textColor="@color/theme_dark_grey"
+                    android:textSize="16sp"
+                    tools:targetApi="m" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/MaterialInputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/other">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edt_other"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:digits=" abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+                    android:drawableTint="@color/theme_dark_grey"
                     android:fontFamily="@font/lato_regular"
                     android:imeOptions="actionDone"
                     android:inputType="text|textNoSuggestions"

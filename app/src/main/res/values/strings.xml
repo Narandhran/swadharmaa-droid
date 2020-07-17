@@ -17,7 +17,6 @@
     <string name="unable_to_fetch">Unable to fetch you!, Try after some time!.</string>
     <string name="profile">PROFILE</string>
     <string name="bookmarks">Bookmarks</string>
-    <string name="settings">Settings</string>
     <string name="about">About</string>
     <string name="logout">Logout</string>
     <string name="sorry_no_data_found">Sorry!, No data found.</string>
@@ -45,14 +44,16 @@
     <string name="add_category">Add Category</string>
     <string name="add_genre">Add Genre</string>
     <string name="add_book">Add Book</string>
+    <string name="user">User</string>
 
     <string name="msg_tip">Tap here to select image \n Tip: 320 * 320</string>
+    <string name="banner">Banner</string>
     <string name="description">Description</string>
     <string name="create">Create</string>
     <string name="genre">Genre</string>
     <string name="category">Category</string>
     <string name="book">Book</string>
-    <string name="position">position</string>
+    <string name="title">title</string>
     <string name="msg_genre">Add genres to filter book efficiently.</string>
     <string name="msg_keyword">Add keywords to filter book efficiently.</string>
     <string name="star">****</string>
@@ -74,7 +75,7 @@
 
     <string name="family_information">Family information</string>
     <string name="nativity">Nativity</string>
-    <string name="kula_theivam">Kula theivam</string>
+    <string name="kula_theivam">Kula dheivam</string>
     <string name="mother_tongue">Mother tongue</string>
     <string name="sampradhayam">Sampradhayam</string>
     <string name="gothram">Gothram</string>
@@ -94,9 +95,9 @@
     <string name="smartha_subsect_telugu">Smartha Subsect (Telugu)</string>
     <string name="shree_vaishnavam">Shree vaishnavam</string>
     <string name="shree_vaishnavam_telugu">Shree vaishnavam (Telugu)</string>
-    <string name="madhava">Madhava</string>
+    <string name="madhava">Madhva</string>
     <string name="rushi">Rushi</string>
-    <string name="parava">Parava</string>
+    <string name="parava">Pravaram</string>
     <string name="panchangam">Panchangam</string>
     <string name="thilakam">Thilakam</string>
     <string name="pithru_gothram">Pithru gothram</string>
@@ -111,19 +112,19 @@
     <string name="mathru_prapithamaha">Mathru prapithamaha</string>
     <string name="mathamahi">Mathamahi</string>
     <string name="mathru_pithamahi">Mathru pithamahi</string>
-    <string name="mathru_prapitamahi">Mathru prapitamahi</string>
+    <string name="mathru_prapitamahi">Mathru prapithamahi</string>
     <string name="prapithamahi">Prapithamahi</string>
     <string name="payasam">Payasam</string>
-    <string name="thyir_pachchadi">Thyir pachchadi</string>
+    <string name="thyir_pachchadi">Thayir pachchadi</string>
     <string name="sweet_pachchadi">Sweet pachchadi</string>
     <string name="kari">Kari</string>
-    <string name="puli_kuttu">Puli Kuttu</string>
+    <string name="puli_kuttu">Pulikkoottu</string>
     <string name="morkuzhambu">Morkuzhambu</string>
     <string name="rasam">Rasam</string>
-    <string name="poruchchakuttu">Poruchchakuttu</string>
+    <string name="poruchchakuttu">Porittha koottu</string>
     <string name="bhakshanam">Bhakshanam</string>
-    <string name="thugayal">Thugayal</string>
-    <string name="uruga">Uruga</string>
+    <string name="thugayal">Thuvaiyal</string>
+    <string name="uruga">Oorukai</string>
     <string name="pazhangal">Pazhangal</string>
     <string name="samayal_type">Samayal type</string>
     <string name="other">Other</string>
@@ -145,7 +146,7 @@
     <string name="there_is_no_gothram_information">There is no gothram information.</string>
     <string name="edit">Edit</string>
     <string name="data">data</string>
-    <string name="tree">Tree</string>
+    <string name="userId">userId</string>
     <string name="read">Read</string>
     <string name="loadAllCategory">loadAllCategory</string>
     <string name="loadBooksByCategory">loadBooksByCategory</string>
@@ -154,5 +155,6 @@
     <string name="new_user">newUser</string>
     <string name="skip">skip</string>
     <string name="there_is_no_samayal_information">There is no samayal information.</string>
+    <string name="see_all">See all</string>
 
 </resources>

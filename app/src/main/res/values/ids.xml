@@ -3,5 +3,6 @@
     <item name="fab_category" type="id" />
     <item name="fab_book" type="id" />
     <item name="fab_genre" type="id" />
+    <item name="fab_user" type="id" />
 
 </resources>

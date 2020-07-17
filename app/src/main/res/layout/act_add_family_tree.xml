@@ -48,7 +48,6 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/lay_relationship"
                 style="@style/MaterialInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -77,7 +76,6 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/lay_dob"
                 style="@style/MaterialInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -105,11 +103,10 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/lay_rashi"
                 style="@style/MaterialInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Rashi">
+                android:hint="@string/rashi">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edt_rashi"
@@ -134,7 +131,6 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/lay_nakshathram"
                 style="@style/MaterialInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -163,7 +159,6 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/lay_padham"
                 style="@style/MaterialInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -192,7 +187,6 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/lay_city"
                 style="@style/MaterialInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

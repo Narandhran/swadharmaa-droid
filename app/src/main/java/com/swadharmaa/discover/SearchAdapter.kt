@@ -38,12 +38,15 @@ class SearchAdapter(
         try {
             data = dataList[position]
             holder.txtName.text = StringUtils.capitalize(data.name)
-            Picasso.get().load(
-                getData(
-                    "rootPath",
-                    activity.applicationContext
-                ) + Enums.Book.value + data.thumbnail
-            ).placeholder(R.drawable.img_placeholder).into(holder.imgBook)
+            Picasso.get()
+                .load(
+                    getData(
+                        "rootPath",
+                        activity.applicationContext
+                    ) + Enums.Book.value + data.thumbnail
+                )
+                .placeholder(R.drawable.img_placeholder)
+                .fit().into(holder.imgBook)
 
             holder.cardBook.setOnClickListener {
                 data = dataList[position]
@@ -52,6 +55,7 @@ class SearchAdapter(
                 activity.startActivity(intent)
             }
         } catch (e: Exception) {
+
             Log.d("Exception", e.toString())
             e.printStackTrace()
         }

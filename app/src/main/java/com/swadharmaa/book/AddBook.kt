@@ -70,6 +70,9 @@ class AddBook : AppCompatActivity(), PickiTCallbacks {
     var keywordList: MutableList<Any> = arrayListOf()
     private lateinit var categoryId: String
     var pickiT: PickiT? = null
+    var bookId: String = ""
+
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.act_add_book)
@@ -84,6 +87,77 @@ class AddBook : AppCompatActivity(), PickiTCallbacks {
 
         im_back.setOnClickListener {
             onBackPressed()
+        }
+
+        try {
+            val data = intent.getStringExtra("data")
+            if (data != null) {
+                val jsonAdapter: JsonAdapter<BookData> =
+                    moshi.adapter(BookData::class.java)
+                val bookData: BookData? = jsonAdapter.fromJson(data.toString())
+                println(bookData)
+                if (bookData != null) {
+                    btn_create.text = getString(R.string.update)
+                    bookId = bookData._id.toString()
+
+                    img_image_delete.visibility = View.VISIBLE
+                    img_image_add.setImageDrawable(
+                        ContextCompat.getDrawable(applicationContext, R.drawable.ic_image_checked)
+                    )
+                    txt_image_filename.text =
+                        getString(R.string.star) + StringUtils.right(bookData.thumbnail, 7)
+
+                    img_pdf_delete.visibility = View.VISIBLE
+                    img_pdf_add.setImageDrawable(
+                        ContextCompat.getDrawable(applicationContext, R.drawable.ic_pdf_checked)
+                    )
+                    txt_pdf_filename.text =
+                        getString(R.string.star) + StringUtils.right(bookData.content, 7)
+
+                    edt_category.setText(bookData.categoryId?.name)
+                    categoryId = bookData.categoryId?._id.toString()
+                    edt_name.setText(bookData.name)
+                    genresList = bookData.genre?.toMutableList()!!
+                    if (genresList.isNotEmpty()) {
+                        view_genre?.apply {
+                            view_genre?.layoutManager =
+                                LinearLayoutManager(
+                                    applicationContext,
+                                    LinearLayoutManager.HORIZONTAL,
+                                    false
+                                )
+                            view_genre?.setHasFixedSize(true)
+                            val genreAdapter =
+                                StringAdapter("create", genresList, this@AddBook)
+                            view_genre?.adapter = genreAdapter
+                        }
+                    }
+                    edt_author.setText(bookData.author)
+                    keywordList = bookData.keywords?.toMutableList()!!
+                    if (keywordList.isNotEmpty()) {
+                        view_keyword?.apply {
+                            view_keyword?.layoutManager =
+                                LinearLayoutManager(
+                                    applicationContext,
+                                    LinearLayoutManager.HORIZONTAL,
+                                    false
+                                )
+                            view_keyword?.setHasFixedSize(true)
+                            val genreAdapter =
+                                StringAdapter("create", keywordList, this@AddBook)
+                            view_keyword?.adapter = genreAdapter
+                        }
+                    }
+                    edt_publish.setText(bookData.yearOfPublish)
+                    edt_description.setText(bookData.description)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("Exception", e.toString())
+            showMessage(
+                lay_root,
+                getString(R.string.unable_to_fetch)
+            )
         }
 
         img_image_add.setOnClickListener {
@@ -203,7 +277,11 @@ class AddBook : AppCompatActivity(), PickiTCallbacks {
 
         btn_create.setOnClickListener {
             if (internet?.checkMobileInternetConn(applicationContext)!!) {
-                createBook()
+                if (bookId.isEmpty()) {
+                    createBook()
+                } else {
+                    updateBook()
+                }
             } else {
                 showErrorMessage(
                     lay_root,
@@ -319,13 +397,13 @@ class AddBook : AppCompatActivity(), PickiTCallbacks {
                     val text = RequestBody.create(MediaType.parse("text/plain"), json)
 
                     if (internet?.checkMobileInternetConn(applicationContext)!!) {
-                        val category =
+                        val create =
                             RetrofitClient.instanceClient.addBook(
                                 thumbnail = imagePart,
                                 pdf = pdfPart,
                                 text = text
                             )
-                        category.enqueue(
+                        create.enqueue(
                             RetrofitWithBar(this@AddBook, object : Callback<ResDto> {
                                 @SuppressLint("SimpleDateFormat")
                                 @RequiresApi(Build.VERSION_CODES.O)
@@ -421,6 +499,372 @@ class AddBook : AppCompatActivity(), PickiTCallbacks {
                     Log.e("Product Exception", e.toString())
                 }
             }
+        }
+    }
+
+    private fun updateBook() {
+        lay_category.error = null
+        lay_name.error = null
+        lay_author.error = null
+        lay_publish.error = null
+        lay_description.error = null
+        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+
+        when {
+            edt_category.length() < 1 -> {
+                lay_category.error = "Categories are required!, Please select category."
+            }
+
+            edt_name.length() < 3 -> {
+                lay_name.error = "AddName's minimum character is 3."
+            }
+
+            genresList.size == 0 -> {
+                showErrorMessage(
+                    lay_root,
+                    "Genres are required!, Please add a genres!"
+                )
+            }
+
+            edt_author.length() < 3 -> {
+                lay_author.error = "Author's minimum character is 3."
+            }
+
+            edt_publish.length() != 4 -> {
+                lay_publish.error = "Published year is required."
+            }
+
+            edt_publish.text.toString().toInt() > currentYear -> {
+                lay_publish.error = "Published year should be less than current year."
+            }
+
+            keywordList.size == 0 -> {
+                showErrorMessage(
+                    lay_root,
+                    "Keywords are required!, Please add a keywords!"
+                )
+            }
+            edt_description.length() < 3 -> {
+                lay_description.error = "Description's minimum character is 3."
+            }
+            else -> {
+                try {
+                    val bookBody = BookBody(
+                        categoryId = categoryId,
+                        name = edt_name.text.toString(),
+                        genre = genresList,
+                        author = edt_author.text.toString(),
+                        yearOfPublish = edt_publish.text.toString(),
+                        keywords = keywordList,
+                        description = edt_description.text.toString()
+                    )
+                    Log.e("bookBody", bookBody.toString())
+                    if (internet?.checkMobileInternetConn(applicationContext)!!) {
+                        val update =
+                            RetrofitClient.instanceClient.updateBook(
+                                id = bookId,
+                                bookBody = bookBody
+                            )
+                        update.enqueue(
+                            RetrofitWithBar(this@AddBook, object : Callback<ResDto> {
+                                @SuppressLint("SimpleDateFormat")
+                                @RequiresApi(Build.VERSION_CODES.O)
+                                override fun onResponse(
+                                    call: Call<ResDto>,
+                                    response: Response<ResDto>
+                                ) {
+                                    Log.e("onResponse", response.toString())
+                                    if (response.code() == 200) {
+                                        when (response.body()?.status) {
+                                            200 -> {
+                                                showMessage(
+                                                    lay_root,
+                                                    response.body()!!.message
+                                                )
+                                                Handler().postDelayed({
+                                                    backToPrevious(bookId)
+                                                }, 400)
+                                            }
+                                            else -> {
+                                                showErrorMessage(
+                                                    lay_root,
+                                                    response.message()
+                                                )
+                                            }
+                                        }
+
+                                    } else if (response.code() == 422 || response.code() == 400) {
+                                        try {
+                                            val moshi: Moshi = Moshi.Builder().build()
+                                            val adapter: JsonAdapter<ErrorMsgDto> =
+                                                moshi.adapter(ErrorMsgDto::class.java)
+                                            val errorResponse =
+                                                adapter.fromJson(response.errorBody()!!.string())
+                                            if (errorResponse != null) {
+                                                if (errorResponse.status == 400) {
+                                                    showErrorMessage(
+                                                        lay_root,
+                                                        errorResponse.message
+                                                    )
+                                                } else {
+                                                    showErrorMessage(
+                                                        lay_root,
+                                                        errorResponse.message
+                                                    )
+                                                }
+
+                                            } else {
+                                                showErrorMessage(
+                                                    lay_root,
+                                                    getString(R.string.msg_something_wrong)
+                                                )
+                                                Log.e(
+                                                    "Response",
+                                                    response.body()!!.toString()
+                                                )
+                                            }
+                                        } catch (e: Exception) {
+                                            showErrorMessage(
+                                                lay_root,
+                                                getString(R.string.msg_something_wrong)
+                                            )
+                                            Log.e("Exception", e.toString())
+                                        }
+
+                                    } else if (response.code() == 401) {
+                                        sessionExpired(this@AddBook)
+                                    } else {
+                                        showErrorMessage(
+                                            lay_root,
+                                            response.message()
+                                        )
+                                    }
+                                }
+
+                                override fun onFailure(call: Call<ResDto>, t: Throwable) {
+                                    Log.e("onResponse", t.message.toString())
+                                    showErrorMessage(
+                                        lay_root,
+                                        getString(R.string.msg_something_wrong)
+                                    )
+                                }
+                            })
+                        )
+                    } else {
+                        showErrorMessage(
+                            lay_root,
+                            getString(R.string.msg_no_internet)
+                        )
+                    }
+                } catch (e: Exception) {
+                    Log.e("Product Exception", e.toString())
+                }
+            }
+        }
+    }
+
+    private fun updatePdf(bookId: String, pdfPath: String) {
+        Log.e("bookBody", "pdf :$pdfPath")
+        val pdfFile = File(pdfPath)
+        val pdfReqBody = RequestBody.create(MediaType.parse("application/pdf"), pdfFile)
+        val pdfPart: MultipartBody.Part =
+            MultipartBody.Part.createFormData("content", pdfFile.name, pdfReqBody)
+        if (internet?.checkMobileInternetConn(applicationContext)!!) {
+            val updatePdf = RetrofitClient.instanceClient.updateBookPdf(pdf = pdfPart, id = bookId)
+            updatePdf.enqueue(
+                RetrofitWithBar(this@AddBook, object : Callback<ResDto> {
+                    @SuppressLint("SimpleDateFormat")
+                    @RequiresApi(Build.VERSION_CODES.O)
+                    override fun onResponse(
+                        call: Call<ResDto>,
+                        response: Response<ResDto>
+                    ) {
+                        Log.e("onResponse", response.toString())
+                        if (response.code() == 200) {
+                            when (response.body()?.status) {
+                                200 -> {
+                                    showMessage(
+                                        lay_root,
+                                        response.body()!!.message
+                                    )
+                                    Handler().postDelayed({
+                                        finish()
+                                        reloadActivity(this@AddBook)
+                                    }, 400)
+                                }
+                                else -> {
+                                    showErrorMessage(
+                                        lay_root,
+                                        response.message()
+                                    )
+                                }
+                            }
+
+                        } else if (response.code() == 422 || response.code() == 400) {
+                            try {
+                                val moshi: Moshi = Moshi.Builder().build()
+                                val adapter: JsonAdapter<ErrorMsgDto> =
+                                    moshi.adapter(ErrorMsgDto::class.java)
+                                val errorResponse =
+                                    adapter.fromJson(response.errorBody()!!.string())
+                                if (errorResponse != null) {
+                                    if (errorResponse.status == 400) {
+                                        showErrorMessage(
+                                            lay_root,
+                                            errorResponse.message
+                                        )
+                                    } else {
+                                        showErrorMessage(
+                                            lay_root,
+                                            errorResponse.message
+                                        )
+                                    }
+
+                                } else {
+                                    showErrorMessage(
+                                        lay_root,
+                                        getString(R.string.msg_something_wrong)
+                                    )
+                                    Log.e(
+                                        "Response",
+                                        response.body()!!.toString()
+                                    )
+                                }
+                            } catch (e: Exception) {
+                                showErrorMessage(
+                                    lay_root,
+                                    getString(R.string.msg_something_wrong)
+                                )
+                                Log.e("Exception", e.toString())
+                            }
+
+                        } else if (response.code() == 401) {
+                            sessionExpired(this@AddBook)
+                        } else {
+                            showErrorMessage(
+                                lay_root,
+                                response.message()
+                            )
+                        }
+                    }
+
+                    override fun onFailure(call: Call<ResDto>, t: Throwable) {
+                        Log.e("onResponse", t.message.toString())
+                        showErrorMessage(
+                            lay_root,
+                            getString(R.string.msg_something_wrong)
+                        )
+                    }
+                })
+            )
+        } else {
+            showErrorMessage(
+                lay_root,
+                getString(R.string.msg_no_internet)
+            )
+        }
+    }
+
+    private fun updateImage(bookId: String, imagePath: String) {
+        Log.e("bookBody", "thumbnail :$imagePath")
+        val imageFile = File(imagePath)
+        val imageReqBody = RequestBody.create(MediaType.parse("image/*"), imageFile)
+        val imagePart: MultipartBody.Part =
+            MultipartBody.Part.createFormData("pdf-thumb", imageFile.name, imageReqBody)
+        if (internet?.checkMobileInternetConn(applicationContext)!!) {
+            val updatePdf =
+                RetrofitClient.instanceClient.updateBookImage(thumbnail = imagePart, id = bookId)
+            updatePdf.enqueue(
+                RetrofitWithBar(this@AddBook, object : Callback<ResDto> {
+                    @SuppressLint("SimpleDateFormat")
+                    @RequiresApi(Build.VERSION_CODES.O)
+                    override fun onResponse(
+                        call: Call<ResDto>,
+                        response: Response<ResDto>
+                    ) {
+                        Log.e("onResponse", response.toString())
+                        if (response.code() == 200) {
+                            when (response.body()?.status) {
+                                200 -> {
+                                    showMessage(
+                                        lay_root,
+                                        response.body()!!.message
+                                    )
+                                    Handler().postDelayed({
+                                        finish()
+                                        reloadActivity(this@AddBook)
+                                    }, 400)
+                                }
+                                else -> {
+                                    showErrorMessage(
+                                        lay_root,
+                                        response.message()
+                                    )
+                                }
+                            }
+
+                        } else if (response.code() == 422 || response.code() == 400) {
+                            try {
+                                val moshi: Moshi = Moshi.Builder().build()
+                                val adapter: JsonAdapter<ErrorMsgDto> =
+                                    moshi.adapter(ErrorMsgDto::class.java)
+                                val errorResponse =
+                                    adapter.fromJson(response.errorBody()!!.string())
+                                if (errorResponse != null) {
+                                    if (errorResponse.status == 400) {
+                                        showErrorMessage(
+                                            lay_root,
+                                            errorResponse.message
+                                        )
+                                    } else {
+                                        showErrorMessage(
+                                            lay_root,
+                                            errorResponse.message
+                                        )
+                                    }
+
+                                } else {
+                                    showErrorMessage(
+                                        lay_root,
+                                        getString(R.string.msg_something_wrong)
+                                    )
+                                    Log.e(
+                                        "Response",
+                                        response.body()!!.toString()
+                                    )
+                                }
+                            } catch (e: Exception) {
+                                showErrorMessage(
+                                    lay_root,
+                                    getString(R.string.msg_something_wrong)
+                                )
+                                Log.e("Exception", e.toString())
+                            }
+
+                        } else if (response.code() == 401) {
+                            sessionExpired(this@AddBook)
+                        } else {
+                            showErrorMessage(
+                                lay_root,
+                                response.message()
+                            )
+                        }
+                    }
+
+                    override fun onFailure(call: Call<ResDto>, t: Throwable) {
+                        Log.e("onResponse", t.message.toString())
+                        showErrorMessage(
+                            lay_root,
+                            getString(R.string.msg_something_wrong)
+                        )
+                    }
+                })
+            )
+        } else {
+            showErrorMessage(
+                lay_root,
+                getString(R.string.msg_no_internet)
+            )
         }
     }
 
@@ -701,7 +1145,6 @@ class AddBook : AppCompatActivity(), PickiTCallbacks {
         if (requestCode == Constants.PICK_PDF_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null) {
             val sourceUri = data.data // 1
             if (sourceUri != null) {
-//                pdfPath = FileUtils.getRealPath(this, sourceUri)
                 pickiT?.getPath(data.data, Build.VERSION.SDK_INT)
                 val name = StringUtils.right(getName(sourceUri, applicationContext), 7)
                 img_pdf_delete.visibility = View.VISIBLE
@@ -721,13 +1164,23 @@ class AddBook : AppCompatActivity(), PickiTCallbacks {
             Log.e("FROM_GALLERY", destinationUri.toString())
         } else if (resultCode == Activity.RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
             val resultUri = UCrop.getOutput(data!!)
-            imagePath = resultUri?.path
-            val name = StringUtils.right(resultUri?.pathSegments?.last(), 7)
-            img_image_delete.visibility = View.VISIBLE
-            img_image_add.setImageDrawable(
-                ContextCompat.getDrawable(applicationContext, R.drawable.ic_image_checked)
-            )
-            txt_image_filename.text = getString(R.string.star) + name
+            if (bookId.isNotEmpty()) {
+                updateImage(bookId = bookId, imagePath = resultUri?.path.toString())
+                val name = StringUtils.right(resultUri?.pathSegments?.last(), 7)
+                img_image_delete.visibility = View.VISIBLE
+                img_image_add.setImageDrawable(
+                    ContextCompat.getDrawable(applicationContext, R.drawable.ic_image_checked)
+                )
+                txt_image_filename.text = getString(R.string.star) + name
+            } else {
+                imagePath = resultUri?.path
+                val name = StringUtils.right(resultUri?.pathSegments?.last(), 7)
+                img_image_delete.visibility = View.VISIBLE
+                img_image_add.setImageDrawable(
+                    ContextCompat.getDrawable(applicationContext, R.drawable.ic_image_checked)
+                )
+                txt_image_filename.text = getString(R.string.star) + name
+            }
             Log.e("FROM_UCROP", resultUri.toString())
         } else if (resultCode == UCrop.RESULT_ERROR) {
             val cropError = UCrop.getError(data!!)
@@ -815,13 +1268,21 @@ class AddBook : AppCompatActivity(), PickiTCallbacks {
         wasSuccessful: Boolean,
         Reason: String?
     ) {
-        pdfPath = path
+        if (bookId.isNotEmpty()) {
+            updatePdf(bookId = bookId, pdfPath = path.toString())
+        } else {
+            pdfPath = path
+        }
         Log.e("pdfPath", pdfPath.toString())
     }
 
     override fun onBackPressed() {
         pickiT?.deleteTemporaryFile()
-        super.onBackPressed()
+        if (bookId.isNotEmpty()) {
+            backToPrevious(bookId)
+        } else {
+            super.onBackPressed()
+        }
     }
 
     override fun onDestroy() {
@@ -829,5 +1290,14 @@ class AddBook : AppCompatActivity(), PickiTCallbacks {
         if (!isChangingConfigurations) {
             pickiT?.deleteTemporaryFile()
         }
+    }
+
+    fun backToPrevious(id: String) {
+        Handler().postDelayed({
+            val intent = Intent()
+            intent.putExtra(getString(R.string.data), id)
+            setResult(RESULT_OK, intent)
+            finish()
+        }, 200)
     }
 }

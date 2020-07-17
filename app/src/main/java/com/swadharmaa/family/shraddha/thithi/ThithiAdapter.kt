@@ -2,7 +2,6 @@ package com.swadharmaa.family.shraddha.thithi
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -10,16 +9,17 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textview.MaterialTextView
-import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.swadharmaa.R
+import com.swadharmaa.interfaces.OnThithiClickListener
 import org.apache.commons.lang3.StringUtils
 
 
 class ThithiAdapter(
     private var dataList: List<com.swadharmaa.family.Thithi>,
-    private val activity: Activity
+    private val activity: Activity,
+    private val listener: OnThithiClickListener
 
 ) :
     RecyclerView.Adapter<ThithiAdapter.Holder>() {
@@ -47,16 +47,8 @@ class ThithiAdapter(
             holder.txtThithi.text = StringUtils.capitalize(data.thithi)
             holder.txtDate.text = StringUtils.capitalize(data.date)
             holder.txtTime.text = StringUtils.capitalize(data.time)
+            holder.bind(data, listener)
 
-            holder.btnEdit.setOnClickListener {
-                val jsonAdapter: JsonAdapter<com.swadharmaa.family.Thithi> = moshi.adapter(
-                    com.swadharmaa.family.Thithi::class.java
-                )
-                val json = jsonAdapter.toJson(data)
-                val intent = Intent(activity, AddThithi::class.java)
-                intent.putExtra(activity.getString(R.string.data), json)
-                activity.startActivity(intent)
-            }
         } catch (e: Exception) {
             Log.d("Exception", e.toString())
             e.printStackTrace()
@@ -85,5 +77,8 @@ class ThithiAdapter(
         var txtDate: MaterialTextView = view.findViewById(R.id.txt_date)
         var txtTime: MaterialTextView = view.findViewById(R.id.txt_time)
         var btnEdit: MaterialButton = view.findViewById(R.id.btn_edit)
+        fun bind(item: com.swadharmaa.family.Thithi, listener: OnThithiClickListener) {
+            btnEdit.setOnClickListener { listener.onItemClick(item) }
+        }
     }
 }

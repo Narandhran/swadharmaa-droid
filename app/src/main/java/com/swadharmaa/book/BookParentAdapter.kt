@@ -49,7 +49,7 @@ class BookParentAdapter(
                     activity.getString(R.string.data),
                     activity.getString(R.string.loadBooksByGenre)
                 )
-                intent.putExtra(activity.getString(R.string.position), position)
+                intent.putExtra(activity.getString(R.string.title), data.genre)
                 activity.startActivity(intent)
             }
         } catch (e: Exception) {

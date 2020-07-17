@@ -175,7 +175,7 @@
                             android:id="@+id/edt_name"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:digits=" abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                            android:digits=" abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789()-"
                             android:fontFamily="@font/lato_regular"
                             android:imeOptions="actionDone"
                             android:inputType="text"

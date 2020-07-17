@@ -330,12 +330,11 @@ class Verification : AppCompatActivity() {
                                             response.body()!!.data.token,
                                             applicationContext
                                         )
-//                                        saveData(
-//                                            "role",
-//                                            response.body()!!.data?.role.toString(),
-//                                            applicationContext
-//                                        )
-
+                                        saveData(
+                                            Enums.Role.value,
+                                            response.body()!!.data.role,
+                                            applicationContext
+                                        )
                                         saveData(
                                             "rootPath",
                                             response.body()!!.data.rpath,

@@ -49,6 +49,10 @@ class Favourite : AppCompatActivity() {
             reloadActivity(this@Favourite)
             layout_refresh.isRefreshing = false
         }
+
+        im_back.setOnClickListener {
+            onBackPressed()
+        }
         favourite()
     }
 

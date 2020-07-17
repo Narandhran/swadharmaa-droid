@@ -53,15 +53,28 @@ data class BookListDto(
 )
 
 data class BookData(
-    var _id: Any,
-    var author: String,
-    var content: String,
-    var createdAt: String,
-    var description: String,
-    var genre: List<String>,
-    var name: String,
-    var thumbnail: String,
-    var updatedAt: String,
-    var yearOfPublish: String,
-    var isBookmark: Boolean?
+    var __v: Int?,
+    var _id: String?,
+    var author: String?,
+    var categoryId: CategoryId?,
+    var content: String?,
+    var createdAt: String?,
+    var description: String?,
+    var genre: List<String>?,
+    var isBookmark: Boolean?,
+    var keywords: List<String>?,
+    var name: String?,
+    var thumbnail: String?,
+    var updatedAt: String?,
+    var yearOfPublish: String?
+)
+
+data class CategoryId(
+    var __v: Int?,
+    var _id: String?,
+    var createdAt: String?,
+    var description: String?,
+    var name: String?,
+    var thumbnail: String?,
+    var updatedAt: String?
 )

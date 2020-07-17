@@ -13,8 +13,8 @@ android {
         applicationId "com.swadharmaa"
         minSdkVersion 19
         targetSdkVersion 29
-        versionCode 1
-        versionName "1.0"
+        versionCode 5
+        versionName "1.5"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         useLibrary 'org.apache.http.legacy'
@@ -71,7 +71,7 @@ dependencies {
 
     //Material by Google
     implementation 'com.google.android.material:material:1.1.0'
-    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
 
     //Material widgets by third parties
@@ -99,12 +99,14 @@ dependencies {
     //Apache commons
     implementation 'org.apache.commons:commons-lang3:3.10'
 
-    // Recommended: Add the Firebase SDK for Google Analytics.
-    implementation 'com.google.firebase:firebase-analytics-ktx:17.4.3'
+    // Firebase Crashlytics SDK.
+    implementation 'com.google.firebase:firebase-analytics-ktx:17.4.4'
+    implementation 'com.google.firebase:firebase-crashlytics:17.1.1'
 
-    // Add the Firebase Crashlytics SDK.
-    implementation 'com.google.firebase:firebase-crashlytics:17.1.0'
-
+    // Custom pdf pick
     implementation 'com.github.HBiSoft:PickiT:0.1.11'
+
+    //Razorpay
+    implementation 'com.razorpay:checkout:1.5.15'
 
 }

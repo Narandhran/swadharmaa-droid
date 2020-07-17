@@ -1,9 +1,8 @@
 package com.swadharmaa.server
 
-import com.swadharmaa.book.BookDto
-import com.swadharmaa.book.BookListDto
-import com.swadharmaa.book.HomeDto
-import com.swadharmaa.book.SingleBook
+import com.swadharmaa.banner.BannerDto
+import com.swadharmaa.banner.BannerListDto
+import com.swadharmaa.book.*
 import com.swadharmaa.category.CategoryDto
 import com.swadharmaa.category.CategoryListDto
 import com.swadharmaa.category.GenreDto
@@ -29,6 +28,9 @@ interface ResponseService {
 
     @GET("user/my_profile")
     fun profile(): Call<ProDto>
+
+    @GET("user/list")
+    fun listOfUsers(): Call<ProListDto>
 
     @Multipart
     @PUT("user/update_dp")
@@ -63,6 +65,17 @@ interface ResponseService {
         @Part("textField") text: RequestBody
     ): Call<ResDto>
 
+    @PUT("library/update/{id}")
+    fun updateBook(@Path("id") id: String, @Body bookBody: BookBody): Call<ResDto>
+
+    @Multipart
+    @PUT("library/update_thumb/{id}")
+    fun updateBookImage(@Path("id") id: String, @Part thumbnail: MultipartBody.Part): Call<ResDto>
+
+    @Multipart
+    @PUT("library/update_book/{id}")
+    fun updateBookPdf(@Path("id") id: String, @Part pdf: MultipartBody.Part): Call<ResDto>
+
     @GET("library/homepage")
     fun getHome(): Call<HomeDto>
 
@@ -74,6 +87,9 @@ interface ResponseService {
 
     @GET("library/list_category/{id}")
     fun getBookByCategory(@Path("id") id: String): Call<BookListDto>
+
+    @GET("library/list_genre/{name}")
+    fun getBookByGenre(@Path("name") id: String): Call<BookListDto>
 
     @POST("library/get_one")
     fun getOneBook(@Body book: SingleBook): Call<BookDto>
@@ -87,37 +103,56 @@ interface ResponseService {
     @GET("fav/list")
     fun listFavourite(): Call<FavListDto>
 
-    @GET("family/list_by_user")
-    fun listOfFamily(): Call<FamilyDto>
+    @GET("family/list_by_user/{id}")
+    fun listOfFamily(@Path("id") id: String): Call<FamilyDto>
 
-    @POST("family/create_update_personal_info")  // To create or update personal info
-    fun personal(@Body personalInfo: PersonalInfo): Call<FamilyDto>
+    @POST("family/create_update_personal_info/{id}")  // To create or update personal info
+    fun personal(@Path("id") id: String, @Body personalInfo: PersonalInfo): Call<FamilyDto>
 
-    @POST("family/create_family_tree")  // To create family tree
-    fun familyTree(@Body bodyFamilyTree: FamilyBody): Call<FamilyDto>
+    @POST("family/create_family_tree/{id}")  // To create family tree
+    fun familyTree(@Path("id") id: String, @Body bodyFamilyTree: FamilyBody): Call<FamilyDto>
 
-    @POST("family/update_family_tree/{id}")  // To update family tree
-    fun familyTree(@Path("id") id: String, @Body bodyFamilyTree: FamilyBody): Call<ResDto>
+    @POST("family/update_family_tree")  // To update family tree
+    fun familyTree(
+        @Query("userId") userId: String,
+        @Query("treeId") treeId: String,
+        @Body bodyFamilyTree: FamilyBody
+    ): Call<ResDto>
 
-    @POST("family/create_update_family_info")  // To create or update family info
-    fun family(@Body familyInfo: FamilyInfo): Call<FamilyDto>
+    @POST("family/create_update_family_info/{id}")  // To create or update family info
+    fun family(@Path("id") id: String, @Body familyInfo: FamilyInfo): Call<FamilyDto>
 
-    @POST("family/create_update_gothram")  // To create or update gothram
-    fun gothram(@Body gothram: Gothram): Call<FamilyDto>
+    @POST("family/create_update_gothram/{id}")  // To create or update gothram
+    fun gothram(@Path("id") id: String, @Body gothram: Gothram): Call<FamilyDto>
 
-    @POST("family/create_thithi")  // To create thithi
-    fun thithi(@Body thithiData: ThithiData): Call<FamilyDto>
+    @POST("family/create_thithi/{id}")  // To create thithi
+    fun thithi(@Path("id") id: String, @Body thithiData: ThithiData): Call<FamilyDto>
 
-    @POST("family/update_thithi/{id}")  // To  update thithi
-    fun thithi(@Path("id") id: String, @Body thithiData: ThithiData): Call<ResDto>
+    @POST("family/update_thithi")  // To  update thithi
+    fun thithi(
+        @Query("userId") userId: String,
+        @Query("thithiId") thithiId: String,
+        @Body thithiData: ThithiData
+    ): Call<ResDto>
 
-    @POST("family/create_update_name")  // To create or update name
-    fun name(@Body name: Name): Call<FamilyDto>
+    @POST("family/create_update_name/{id}")  // To create or update name
+    fun name(@Path("id") id: String, @Body name: Name): Call<FamilyDto>
 
-    @POST("family/create_update_samayal")  // To create or update samayal
-    fun samayal(@Body samayal: Samayal): Call<FamilyDto>
+    @POST("family/create_update_samayal/{id}")  // To create or update samayal
+    fun samayal(@Path("id") id: String, @Body samayal: Samayal): Call<FamilyDto>
 
-    @POST("family/create_update_vazhkam")  // To create or update vazhakkam
-    fun vazhakkam(@Body vazhakkam: Vazhakkam): Call<FamilyDto>
+    @POST("family/create_update_vazhkam/{id}")  // To create or update vazhakkam
+    fun vazhakkam(@Path("id") id: String, @Body vazhakkam: Vazhakkam): Call<FamilyDto>
+
+    @Multipart
+    @POST("banner/create")
+    fun addBanner(@Part image: MultipartBody.Part): Call<BannerDto>
+
+    @Multipart
+    @PUT("banner/update/{id}")
+    fun updateBanner(@Path("id") id: String, @Part image: MultipartBody.Part): Call<BannerDto>
+
+    @GET("banner/list")
+    fun getBanners(): Call<BannerListDto>
 
 }

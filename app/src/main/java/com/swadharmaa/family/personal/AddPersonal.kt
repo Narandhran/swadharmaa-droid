@@ -28,8 +28,8 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.swadharmaa.R
-import com.swadharmaa.family.FamilyDto
 import com.swadharmaa.family.FamilyData
+import com.swadharmaa.family.FamilyDto
 import com.swadharmaa.family.PersonalInfo
 import com.swadharmaa.general.*
 import com.swadharmaa.server.InternetDetector
@@ -60,7 +60,9 @@ class AddPersonal : AppCompatActivity() {
     private val moshi: Moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
+    private var family: Call<FamilyDto>? = null
     var internet: InternetDetector? = null
+    var userId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,7 +79,7 @@ class AddPersonal : AppCompatActivity() {
             fileLocationReceiver,
             IntentFilter(Constants.fileLocation)
         )
-
+        userId = intent.getStringExtra(getString(R.string.userId))
         try {
             val data = intent.getStringExtra(getString(R.string.data))
             if (data != null) {
@@ -270,9 +272,9 @@ class AddPersonal : AppCompatActivity() {
                 }, mYear, mMonth, mDay
             )
             val min =
-                System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 365.25 * 75
+                System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 365.25 * 100
             val max =
-                System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 365.25 * 18
+                System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 365.25 * 5
             datePickerDialog.datePicker.minDate = min.toLong()
             datePickerDialog.datePicker.maxDate = max.toLong()
             datePickerDialog.setTitle("")
@@ -445,81 +447,12 @@ class AddPersonal : AppCompatActivity() {
 
     private fun update() {
         lay_name.error = null
-//        lay_sharma.error = null
-//        lay_dob.error = null
-//        lay_time.error = null
-//        lay_place.error = null
-//        lay_rashi.error = null
-//        lay_nakshathram.error = null
-//        lay_padham.error = null
-//        lay_city.error = null
-//        lay_mobile.error = null
-//        lay_gender.error = null
-//        lay_email.error = null
-//        lay_status.error = null
-//        lay_status.error = null
 
         when {
             edt_name.length() < 3 -> {
                 lay_name.error = "AddName's minimum character is 3."
             }
-//            edt_sharma.length() < 3 -> {
-//                lay_sharma.error = "Sharma's minimum character is 3."
-//            }
-//            edt_dob.length() < 1 -> {
-//                lay_dob.error = "Date of birth is required."
-//            }
-//            edt_time.length() < 1 -> {
-//                lay_time.error = "Time of birth is required."
-//            }
-//            edt_place.length() < 2 -> {
-//                lay_place.error = "Place's minimum character is 2."
-//            }
-//            edt_rashi.length() < 1 -> {
-//                lay_rashi.error = "Rashi is required."
-//            }
-//            edt_nakshathram.length() < 1 -> {
-//                lay_nakshathram.error = "Nakshathram is required."
-//            }
-//            edt_padham.length() < 1 -> {
-//                lay_padham.error = "Padham is required."
-//            }
-//            edt_city.length() < 3 -> {
-//                lay_city.error = "City's minimum character is 3."
-//            }
-//            edt_mobile.length() != 10 -> {
-//                lay_mobile.error = "Enter the valid mobile number."
-//            }
-//            edt_gender.length() < 1 -> {
-//                lay_gender.error = "Gender is required."
-//            }
-//            !isValidEmail(edt_email.text) -> {
-//                lay_email.error = "Email address is not a valid one."
-//            }
-//            edt_status.length() < 1 -> {
-//                lay_status.error = "Marital status is required."
-//            }
             else -> {
-//                val map: HashMap<String, HashMap<String, Any>> = HashMap()
-//                val mapData: HashMap<String, Any> = HashMap()
-//                mapData["name"] = edt_name.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["sharma"] = edt_sharma.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["dateOfBirth"] = edt_dob.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["timeOfBirth"] = edt_time.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["placeOfBirth"] = edt_place.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["rashi"] = edt_rashi.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["nakshathram"] =
-//                    edt_nakshathram.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["padham"] = edt_padham.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["city"] = edt_city.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["mobileNumber"] =
-//                    edt_mobile.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["gender"] = edt_gender.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["email"] = edt_email.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["maritalStatus"] =
-//                    edt_status.text.toString().toLowerCase(Locale.getDefault())
-//                map["personalInfo"] = mapData
-
                 val personalInfo = PersonalInfo(
                     name = edt_name.text.toString().toLowerCase(Locale.getDefault()),
                     sharma = edt_sharma.text.toString().toLowerCase(Locale.getDefault()),
@@ -544,8 +477,19 @@ class AddPersonal : AppCompatActivity() {
         if (internet!!.checkMobileInternetConn(this@AddPersonal)) {
             try {
                 Log.e("body", data.toString())
-                val familyCreate = RetrofitClient.instanceClient.personal(data)
-                familyCreate.enqueue(
+                family = if (userId != null) {
+                    Log.e("userId", userId.toString())
+                    RetrofitClient.instanceClient.personal(
+                        id = userId.toString(),
+                        personalInfo = data
+                    )
+                } else {
+                    RetrofitClient.instanceClient.personal(
+                        id = getData("user_id", applicationContext).toString(),
+                        personalInfo = data
+                    )
+                }
+                family!!.enqueue(
                     RetrofitWithBar(this@AddPersonal, object : Callback<FamilyDto> {
                         @SuppressLint("SimpleDateFormat")
                         @RequiresApi(Build.VERSION_CODES.O)

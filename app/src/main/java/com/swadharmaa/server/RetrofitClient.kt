@@ -11,6 +11,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import java.util.concurrent.TimeUnit
 
 @SuppressLint("StaticFieldLeak")
 object RetrofitClient {
@@ -22,7 +23,6 @@ object RetrofitClient {
 
     //With Authorization token
     class SupportInterceptor : Interceptor {
-
         //Interceptor class for setting of the headers for every request
         override fun intercept(chain: Interceptor.Chain): Response {
             var request = chain.request()
@@ -41,24 +41,29 @@ object RetrofitClient {
         }
     }
 
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(1, TimeUnit.MINUTES)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(15, TimeUnit.SECONDS)
+        .addInterceptor(SupportInterceptor())
+        .build()
+
     val instanceClient: ResponseService by lazy {
-        val client = OkHttpClient.Builder().addInterceptor(SupportInterceptor()).build()
         val retrofit = Retrofit.Builder()
             .client(client)
             .baseUrl(HOST)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .build()
-
 //        Log.d("Interceptor", getToken("user_token", Application.appContext) + " vijay")
         retrofit.create(ResponseService::class.java)
     }
 
     //Without Authorization token
     val instanceClientWithoutToken: ResponseService by lazy {
-
         val retrofit = Retrofit.Builder()
             .baseUrl(HOST)
+            .client(client)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .build()

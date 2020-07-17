@@ -119,6 +119,10 @@ class Profile : AppCompatActivity() {
             startActivity(Intent(this@Profile, Favourite::class.java))
         }
 
+        lay_donate.setOnClickListener {
+            showMessage(layout_refresh, "Work-in progress")
+        }
+
         if (internet?.checkMobileInternetConn(this)!!) {
             loadProfileInfo()
         } else {
@@ -127,8 +131,13 @@ class Profile : AppCompatActivity() {
                 getString(R.string.msg_no_internet)
             )
         }
-
         initSpeedDial()
+        val role = getData(Enums.Role.value, applicationContext)
+        if (role == Enums.Admin.value) {
+            fab_admin.visibility = View.VISIBLE
+        } else {
+            fab_admin.visibility = View.GONE
+        }
     }
 
     private fun loadProfileInfo(): MutableList<ProData> {
@@ -303,6 +312,15 @@ class Profile : AppCompatActivity() {
                 .create()
         )
 
+        fab_admin.addActionItem(
+            SpeedDialActionItem.Builder(R.id.fab_user, R.drawable.ic_add_user)
+                .setLabel(getString(R.string.user))
+                .setFabImageTintColor(ResourcesCompat.getColor(resources, R.color.white, theme))
+                .setLabelColor(getColor(R.color.theme_dark_grey))
+                .setTheme(R.style.FabTheme)
+                .create()
+        )
+
 
         fab_admin.setOnActionSelectedListener(SpeedDialView.OnActionSelectedListener { actionItem ->
             when (actionItem.id) {
@@ -320,6 +338,12 @@ class Profile : AppCompatActivity() {
 
                 R.id.fab_genre -> {
                     addGenre()
+                    fab_admin.close()
+                    return@OnActionSelectedListener true
+                }
+
+                R.id.fab_user -> {
+                    startActivity(Intent(this@Profile, Users::class.java))
                     fab_admin.close()
                     return@OnActionSelectedListener true
                 }

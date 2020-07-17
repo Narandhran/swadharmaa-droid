@@ -10,8 +10,9 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.swadharmaa.R
-import com.swadharmaa.family.FamilyDto
 import com.swadharmaa.family.FamilyData
+import com.swadharmaa.family.FamilyDto
+import com.swadharmaa.general.getData
 import com.swadharmaa.general.reloadActivity
 import com.swadharmaa.general.sessionExpired
 import com.swadharmaa.general.showErrorMessage
@@ -32,6 +33,7 @@ class Personal : AppCompatActivity() {
         .add(KotlinJsonAdapterFactory())
         .build()
     var internetDetector: InternetDetector? = null
+    var userId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,17 +48,26 @@ class Personal : AppCompatActivity() {
             onBackPressed()
         }
 
+        userId = intent.getStringExtra(getString(R.string.userId))
         personal()
 
         btn_add.setOnClickListener {
-            startActivity(Intent(this@Personal, AddPersonal::class.java))
+            val intent = Intent(this@Personal, AddPersonal::class.java)
+            intent.putExtra(getString(R.string.userId), userId)
+            startActivity(intent)
         }
     }
 
     private fun personal() {
         internetDetector = InternetDetector.getInstance(this@Personal)
         if (internetDetector?.checkMobileInternetConn(applicationContext)!!) {
-            personal = RetrofitClient.instanceClient.listOfFamily()
+            personal = if (userId != null) {
+                RetrofitClient.instanceClient.listOfFamily(userId!!)
+            } else {
+                RetrofitClient.instanceClient.listOfFamily(
+                    getData("user_id", applicationContext).toString()
+                )
+            }
             personal?.enqueue(object : Callback<FamilyDto> {
                 @SuppressLint("DefaultLocale", "SetTextI18n")
                 override fun onResponse(
@@ -97,6 +108,7 @@ class Personal : AppCompatActivity() {
                                             moshi.adapter(FamilyData::class.java)
                                         val json = jsonAdapter.toJson(response.body()!!.data)
                                         val intent = Intent(this@Personal, AddPersonal::class.java)
+                                        intent.putExtra(getString(R.string.userId), userId)
                                         intent.putExtra(getString(R.string.data), json)
                                         startActivity(intent)
                                     }

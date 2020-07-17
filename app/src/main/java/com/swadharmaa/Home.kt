@@ -16,7 +16,7 @@ import kotlinx.android.synthetic.main.act_home.*
 import kotlin.system.exitProcess
 
 class Home : AppCompatActivity() {
-
+    val bundle = Bundle()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.act_home)
@@ -42,6 +42,7 @@ class Home : AppCompatActivity() {
                         startActivity(intent)
                     } else {
                         val family = Family.newInstance()
+                        family.arguments = bundle
                         openFragment(family)
                         return@OnNavigationItemSelectedListener true
                     }

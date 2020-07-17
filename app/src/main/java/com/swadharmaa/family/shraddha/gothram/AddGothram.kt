@@ -12,8 +12,9 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.swadharmaa.R
-import com.swadharmaa.family.FamilyDto
 import com.swadharmaa.family.FamilyData
+import com.swadharmaa.family.FamilyDto
+import com.swadharmaa.general.getData
 import com.swadharmaa.general.sessionExpired
 import com.swadharmaa.general.showErrorMessage
 import com.swadharmaa.general.showMessage
@@ -27,7 +28,6 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.util.*
-import kotlin.collections.HashMap
 
 
 class AddGothram : AppCompatActivity() {
@@ -36,6 +36,8 @@ class AddGothram : AppCompatActivity() {
         .add(KotlinJsonAdapterFactory())
         .build()
     var internet: InternetDetector? = null
+    private var family: Call<FamilyDto>? = null
+    var userId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +50,7 @@ class AddGothram : AppCompatActivity() {
             onBackPressed()
         }
 
+        userId = intent.getStringExtra(getString(R.string.userId))
         try {
             val data = intent.getStringExtra(getString(R.string.data))
             if (data != null) {
@@ -69,25 +72,12 @@ class AddGothram : AppCompatActivity() {
 
     private fun update() {
         lay_pithru_gothram.error = null
-//        lay_mathru_gothram.error = null
 
         when {
             edt_pithru_gothram.length() < 3 -> {
                 lay_pithru_gothram.error = "Pithru gothram's minimum character is 3."
             }
-//            edt_mathru_gothram.length() < 3 -> {
-//                lay_mathru_gothram.error = "Mathru gothram's minimum character is 3."
-//            }
             else -> {
-                val map: HashMap<String, HashMap<String, HashMap<String, Any>>> = HashMap()
-//                val mapGothram: HashMap<String, HashMap<String, Any>> = HashMap()
-//                val mapData: HashMap<String, Any> = HashMap()
-//                mapData["pithruGothram"] =
-//                    edt_pithru_gothram.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["mathruGothram"] =
-//                    edt_mathru_gothram.text.toString().toLowerCase(Locale.getDefault())
-//                mapGothram["gothram"] = mapData
-//                map["shraardhaInfo"] = mapGothram
                 val gothram = com.swadharmaa.family.Gothram(
                     pithruGothram = edt_pithru_gothram.text.toString()
                         .toLowerCase(Locale.getDefault()),
@@ -103,8 +93,18 @@ class AddGothram : AppCompatActivity() {
         if (internet!!.checkMobileInternetConn(this@AddGothram)) {
             try {
                 Log.e("data", data.toString())
-                val gothram = RetrofitClient.instanceClient.gothram(data)
-                gothram.enqueue(
+                family = if (userId != null) {
+                    RetrofitClient.instanceClient.gothram(
+                        id = userId!!,
+                        gothram = data
+                    )
+                } else {
+                    RetrofitClient.instanceClient.gothram(
+                        id = getData("user_id", applicationContext).toString(),
+                        gothram = data
+                    )
+                }
+                family!!.enqueue(
                     RetrofitWithBar(this@AddGothram, object : Callback<FamilyDto> {
                         @SuppressLint("SimpleDateFormat")
                         @RequiresApi(Build.VERSION_CODES.O)

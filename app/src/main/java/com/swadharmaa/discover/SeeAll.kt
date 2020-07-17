@@ -1,18 +1,20 @@
 package com.swadharmaa.discover
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.animation.LinearInterpolator
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import com.swadharmaa.Home
 import com.swadharmaa.R
-import com.swadharmaa.book.*
+import com.swadharmaa.book.BookData
+import com.swadharmaa.book.BookListDto
 import com.swadharmaa.category.CategoryAdapter
 import com.swadharmaa.category.CategoryData
 import com.swadharmaa.category.CategoryListDto
@@ -23,15 +25,8 @@ import com.swadharmaa.general.showErrorMessage
 import com.swadharmaa.server.InternetDetector
 import com.swadharmaa.server.RetrofitClient
 import com.swadharmaa.user.ErrorMsgDto
-import kotlinx.android.synthetic.main.act_search.*
 import kotlinx.android.synthetic.main.act_see_all.*
-import kotlinx.android.synthetic.main.act_see_all.lay_data
-import kotlinx.android.synthetic.main.act_see_all.lay_no_data
-import kotlinx.android.synthetic.main.act_see_all.lay_no_internet
-import kotlinx.android.synthetic.main.act_see_all.lay_shimmer
-import kotlinx.android.synthetic.main.act_see_all.layout_refresh
-import kotlinx.android.synthetic.main.toolbar.*
-import kotlinx.android.synthetic.main.toolbar.im_back
+import org.apache.commons.lang3.StringUtils
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -43,22 +38,22 @@ class SeeAll : AppCompatActivity() {
     private val moshi: Moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
-    private var loadCategory: Call<CategoryListDto>? = null
-    private var loadBooks: Call<HomeDto>? = null
-    private var loadBookByCategory: Call<BookListDto>? = null
+    var loadCategory: Call<CategoryListDto>? = null
     var categoryData: MutableList<CategoryData> = arrayListOf()
-    var homeData: MutableList<HomeBookData> = arrayListOf()
+    lateinit var categoryAdapter: CategoryAdapter
+    var loadBooks: Call<BookListDto>? = null
     var bookData: MutableList<BookData> = arrayListOf()
+    lateinit var searchAdapter: SearchAdapter
 
     val spanCount = 3 //  columns
     val spacing = 15 // pixel
     val includeEdge = true
+    private var ascending = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.act_see_all)
 
-        txt_edit.visibility = View.GONE
         layout_refresh.setOnRefreshListener {
             finish()
             reloadActivity(this@SeeAll)
@@ -86,8 +81,10 @@ class SeeAll : AppCompatActivity() {
                         if (!lay_shimmer.isShimmerStarted) {
                             lay_shimmer.startShimmer()
                         }
-                        val position = intent.getIntExtra(getString(R.string.position), 0)
-                        loadBooks(position)
+                        val title = intent.getStringExtra(getString(R.string.title))
+                        if (title != null) {
+                            loadBooksByGenre(title)
+                        }
                     }
 
                     getString(R.string.loadBooksByCategory) -> {
@@ -96,7 +93,9 @@ class SeeAll : AppCompatActivity() {
                         }
                         val title = intent.getStringExtra(getString(R.string.name))
                         val id = intent.getStringExtra(getString(R.string.id))
-                        loadBookByCategory(title = title, id = id)
+                        if (title != null && id != null) {
+                            loadBookByCategory(title = title, id = id)
+                        }
                     }
                 }
             }
@@ -112,9 +111,6 @@ class SeeAll : AppCompatActivity() {
         }
         if (loadBooks != null) {
             loadBooks?.cancel()
-        }
-        if (loadBookByCategory != null) {
-            loadBookByCategory?.cancel()
         }
     }
 
@@ -152,9 +148,35 @@ class SeeAll : AppCompatActivity() {
                                             )
                                         )
                                         view_more?.setHasFixedSize(true)
-                                        val categoryAdapter =
+                                        categoryAdapter =
                                             CategoryAdapter(categoryData, this@SeeAll)
                                         view_more?.adapter = categoryAdapter
+
+                                        im_sort.setOnClickListener {
+                                            im_sort.animate()
+                                                .rotationX(360f).rotationY(360f)
+                                                .setDuration(500)
+                                                .setInterpolator(LinearInterpolator())
+                                                .setListener(object : AnimatorListenerAdapter() {
+                                                    override fun onAnimationEnd(animator: Animator) {
+                                                        im_sort.rotationX = 0f
+                                                        im_sort.rotationY = 0f
+                                                    }
+                                                })
+                                            if (ascending) {
+                                                categoryData.sortBy { it.name }
+                                                categoryAdapter =
+                                                    CategoryAdapter(categoryData, this@SeeAll)
+                                                view_more?.adapter = categoryAdapter
+                                                ascending = false
+                                            } else {
+                                                categoryData.reverse()
+                                                categoryAdapter =
+                                                    CategoryAdapter(categoryData, this@SeeAll)
+                                                view_more?.adapter = categoryAdapter
+                                                ascending = true
+                                            }
+                                        }
                                     }
                                 }
                                 204 -> {
@@ -246,23 +268,22 @@ class SeeAll : AppCompatActivity() {
         }
     }
 
-    private fun loadBooks(position: Int) {
+    private fun loadBooksByGenre(title: String) {
         if (internet?.checkMobileInternetConn(applicationContext)!!) {
-            loadBooks = RetrofitClient.instanceClient.getHome()
-            loadBooks?.enqueue(object : Callback<HomeDto> {
+            loadBooks = RetrofitClient.instanceClient.getBookByGenre(title)
+            loadBooks?.enqueue(object : Callback<BookListDto> {
                 @SuppressLint("DefaultLocale", "SetTextI18n")
                 override fun onResponse(
-                    call: Call<HomeDto>,
-                    response: Response<HomeDto>
+                    call: Call<BookListDto>,
+                    response: Response<BookListDto>
                 ) {
                     Log.e("onResponse", response.toString())
                     when {
                         response.code() == 200 -> {
                             when (response.body()?.status) {
                                 200 -> {
-                                    txt_title.text = response.body()!!.data[position].genre
-                                    homeData =
-                                        response.body()!!.data[position].books.toMutableList()
+                                    txt_title.text = StringUtils.capitalize(title)
+                                    bookData = response.body()!!.data.toMutableList()
                                     lay_no_data.visibility = View.GONE
                                     lay_no_internet.visibility = View.GONE
                                     lay_data.visibility = View.VISIBLE
@@ -281,9 +302,35 @@ class SeeAll : AppCompatActivity() {
                                             )
                                         )
                                         view_more?.setHasFixedSize(true)
-                                        val bookChildAdapter =
-                                            BookChildAdapter(homeData, this@SeeAll)
-                                        view_more?.adapter = bookChildAdapter
+                                        searchAdapter =
+                                            SearchAdapter(bookData, this@SeeAll)
+                                        view_more?.adapter = searchAdapter
+
+                                        im_sort.setOnClickListener {
+                                            im_sort.animate()
+                                                .rotationX(360f).rotationY(360f)
+                                                .setDuration(500)
+                                                .setInterpolator(LinearInterpolator())
+                                                .setListener(object : AnimatorListenerAdapter() {
+                                                    override fun onAnimationEnd(animator: Animator) {
+                                                        im_sort.rotationX = 0f
+                                                        im_sort.rotationY = 0f
+                                                    }
+                                                })
+                                            if (ascending) {
+                                                bookData.sortBy { it.name }
+                                                searchAdapter =
+                                                    SearchAdapter(bookData, this@SeeAll)
+                                                view_more?.adapter = searchAdapter
+                                                ascending = false
+                                            } else {
+                                                bookData.reverse()
+                                                searchAdapter =
+                                                    SearchAdapter(bookData, this@SeeAll)
+                                                view_more?.adapter = searchAdapter
+                                                ascending = true
+                                            }
+                                        }
                                     }
                                 }
                                 204 -> {
@@ -353,7 +400,7 @@ class SeeAll : AppCompatActivity() {
                     lay_shimmer.stopShimmer()
                 }
 
-                override fun onFailure(call: Call<HomeDto>, t: Throwable) {
+                override fun onFailure(call: Call<BookListDto>, t: Throwable) {
                     Log.e("onFailure", t.message.toString())
                     if (!call.isCanceled) {
                         showErrorMessage(
@@ -377,8 +424,8 @@ class SeeAll : AppCompatActivity() {
 
     private fun loadBookByCategory(title: String, id: String) {
         if (internet?.checkMobileInternetConn(applicationContext)!!) {
-            loadBookByCategory = RetrofitClient.instanceClient.getBookByCategory(id)
-            loadBookByCategory?.enqueue(object : Callback<BookListDto> {
+            loadBooks = RetrofitClient.instanceClient.getBookByCategory(id)
+            loadBooks?.enqueue(object : Callback<BookListDto> {
                 @SuppressLint("DefaultLocale", "SetTextI18n")
                 override fun onResponse(
                     call: Call<BookListDto>,
@@ -409,9 +456,35 @@ class SeeAll : AppCompatActivity() {
                                             )
                                         )
                                         view_more?.setHasFixedSize(true)
-                                        val searchAdapter =
+                                        searchAdapter =
                                             SearchAdapter(bookData, this@SeeAll)
                                         view_more?.adapter = searchAdapter
+
+                                        im_sort.setOnClickListener {
+                                            im_sort.animate()
+                                                .rotationX(360f).rotationY(360f)
+                                                .setDuration(500)
+                                                .setInterpolator(LinearInterpolator())
+                                                .setListener(object : AnimatorListenerAdapter() {
+                                                    override fun onAnimationEnd(animator: Animator) {
+                                                        im_sort.rotationX = 0f
+                                                        im_sort.rotationY = 0f
+                                                    }
+                                                })
+                                            if (ascending) {
+                                                bookData.sortBy { it.name }
+                                                searchAdapter =
+                                                    SearchAdapter(bookData, this@SeeAll)
+                                                view_more?.adapter = searchAdapter
+                                                ascending = false
+                                            } else {
+                                                bookData.reverse()
+                                                searchAdapter =
+                                                    SearchAdapter(bookData, this@SeeAll)
+                                                view_more?.adapter = searchAdapter
+                                                ascending = true
+                                            }
+                                        }
                                     }
                                 }
                                 204 -> {

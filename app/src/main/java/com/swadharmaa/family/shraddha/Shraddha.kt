@@ -26,6 +26,7 @@ class Shraddha : AppCompatActivity() {
 
         internetDetector = InternetDetector.getInstance(applicationContext)
         val shraardhaPagerAdapter = ShraddhaPagerAdapter(
+            activity = this@Shraddha,
             fm = this@Shraddha.supportFragmentManager,
             tabCount = tab_shraardha.tabCount
         )

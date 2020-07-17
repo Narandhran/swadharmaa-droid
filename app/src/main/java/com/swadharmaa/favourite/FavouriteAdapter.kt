@@ -63,7 +63,8 @@ class FavouriteAdapter(
                     "rootPath",
                     activity.applicationContext
                 ) + Enums.Book.value + data.libraryId.thumbnail
-            ).placeholder(R.drawable.img_placeholder).into(holder.imgBook)
+            ).placeholder(R.drawable.img_placeholder)
+                .fit().into(holder.imgBook)
 
             holder.cardFav.setOnClickListener {
                 data = dataList[position]

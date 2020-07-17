@@ -14,8 +14,9 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.swadharmaa.R
 import com.swadharmaa.book.StringAdapter
-import com.swadharmaa.family.FamilyDto
 import com.swadharmaa.family.FamilyData
+import com.swadharmaa.family.FamilyDto
+import com.swadharmaa.general.getData
 import com.swadharmaa.general.reloadFragment
 import com.swadharmaa.general.sessionExpired
 import com.swadharmaa.general.showErrorMessage
@@ -31,11 +32,13 @@ import retrofit2.Response
 
 class Samayal : Fragment(), IOnBackPressed {
 
-    private var familyDto: Call<FamilyDto>? = null
+    private var family: Call<FamilyDto>? = null
     private val moshi: Moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
     var internetDetector: InternetDetector? = null
+    var userId: String? = null
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -54,17 +57,26 @@ class Samayal : Fragment(), IOnBackPressed {
             )
             layout_refresh.isRefreshing = false
         }
+        userId = this.arguments!!.getString(getString(R.string.userId))
+        family()
 
         btn_add.setOnClickListener {
-            startActivity(Intent(requireActivity(), AddSamayal::class.java))
+            val intent = Intent(requireActivity(), AddSamayal::class.java)
+            intent.putExtra(getString(R.string.userId), userId)
+            startActivity(intent)
         }
-        family()
     }
 
     private fun family() {
         if (internetDetector?.checkMobileInternetConn(requireContext())!!) {
-            familyDto = RetrofitClient.instanceClient.listOfFamily()
-            familyDto?.enqueue(object : Callback<FamilyDto> {
+            family = if (userId != null) {
+                RetrofitClient.instanceClient.listOfFamily(userId!!)
+            } else {
+                RetrofitClient.instanceClient.listOfFamily(
+                    getData("user_id", requireContext()).toString()
+                )
+            }
+            family?.enqueue(object : Callback<FamilyDto> {
                 @SuppressLint("DefaultLocale", "SetTextI18n")
                 override fun onResponse(
                     call: Call<FamilyDto>,
@@ -206,6 +218,7 @@ class Samayal : Fragment(), IOnBackPressed {
                                         val intent =
                                             Intent(requireActivity(), AddSamayal::class.java)
                                         intent.putExtra(getString(R.string.data), json)
+                                        intent.putExtra(getString(R.string.userId), userId)
                                         startActivity(intent)
                                     }
 
@@ -295,8 +308,8 @@ class Samayal : Fragment(), IOnBackPressed {
 
     override fun onStop() {
         super.onStop()
-        if (familyDto != null) {
-            familyDto?.cancel()
+        if (family != null) {
+            family?.cancel()
         }
     }
 

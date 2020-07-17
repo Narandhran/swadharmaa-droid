@@ -14,7 +14,9 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.squareup.picasso.Picasso
+import com.swadharmaa.banner.Banner
 import com.swadharmaa.R
+import com.swadharmaa.banner.BannerListDto
 import com.swadharmaa.book.BookParentAdapter
 import com.swadharmaa.book.HomeData
 import com.swadharmaa.book.HomeDto
@@ -29,7 +31,7 @@ import com.swadharmaa.user.ErrorMsgDto
 import com.swadharmaa.user.Login
 import com.swadharmaa.user.ProDto
 import com.swadharmaa.user.Profile
-import kotlinx.android.synthetic.main.act_discover.*
+import kotlinx.android.synthetic.main.frag_discover.*
 import org.apache.commons.lang3.StringUtils
 import retrofit2.Call
 import retrofit2.Callback
@@ -41,6 +43,7 @@ class Discover : Fragment(), IOnBackPressed {
 
     private var profile: Call<ProDto>? = null
     private var category: Call<CategoryListDto>? = null
+    private var banner: Call<BannerListDto>? = null
     private var books: Call<HomeDto>? = null
     var internetDetector: InternetDetector? = null
     private val moshi: Moshi = Moshi.Builder()
@@ -57,14 +60,11 @@ class Discover : Fragment(), IOnBackPressed {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.act_discover, container, false)
+        return inflater.inflate(R.layout.frag_discover, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-//        showMessage(layout_refresh,"This is the test crashlytics")
-
         layout_refresh.setOnRefreshListener {
             reloadFragment(
                 activity?.supportFragmentManager!!,
@@ -73,11 +73,19 @@ class Discover : Fragment(), IOnBackPressed {
             layout_refresh.isRefreshing = false
         }
 
-        if (!lay_shimmer.isShimmerStarted) {
-            lay_shimmer.startShimmer()
-        }
-
         internetDetector = InternetDetector.getInstance(activity!!)
+        if (internetDetector?.checkMobileInternetConn(requireActivity())!!) {
+            category()
+            books()
+            loadProfileInfo()
+            banner()
+        } else {
+            lay_shimmer.visibility = View.GONE
+            lay_shimmer.stopShimmer()
+            lay_no_data.visibility = View.GONE
+            lay_data.visibility = View.GONE
+            lay_no_internet.visibility = View.VISIBLE
+        }
 
         img_profile.setOnClickListener {
             val isLoggedIn = getData("logged_user", requireContext())
@@ -89,39 +97,6 @@ class Discover : Fragment(), IOnBackPressed {
                 requireActivity().startActivity(Intent(requireActivity(), Profile::class.java))
             }
         }
-
-        val adPic = listOf(
-            R.drawable.im_add_one,
-            R.drawable.im_add_two,
-            R.drawable.im_add_three
-        )
-        view_pager.adapter = ViewPagerAdapter(
-            false, requireContext(),
-            adPic.toMutableList()
-        )
-        worm_dots_indicator.setViewPager(view_pager)
-
-        try {
-            var currentPage = 0
-            val update = Runnable {
-                if (currentPage == adPic.size) {
-                    currentPage = 0
-                }
-                view_pager.setCurrentItem(currentPage++, true)
-            }
-
-            timer?.schedule(object : TimerTask() {
-                override fun run() {
-                    handler.post(update)
-                }
-            }, 1000, 3000)
-        } catch (exception: java.lang.Exception) {
-            Log.e("Exception", exception.message.toString())
-        }
-
-        category()
-        books()
-        loadProfileInfo()
 
         btn_seeall.setOnClickListener {
             val intent = Intent(requireActivity(), SeeAll::class.java)
@@ -136,178 +111,261 @@ class Discover : Fragment(), IOnBackPressed {
         }
     }
 
-    override fun onStop() {
-        super.onStop()
-        try {
-            timer!!.cancel()
-            timer!!.purge()
-            timer = null
-        } catch (e: Exception) {
-            println("Timer Ex: $e")
-        }
-
-        if (profile != null) {
-            profile?.cancel()
-        }
-        if (category != null) {
-            category?.cancel()
-        }
-        if (books != null) {
-            books?.cancel()
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        try {
-            timer!!.cancel()
-            timer!!.purge()
-            timer = null
-        } catch (e: Exception) {
-            println("Timer Ex: $e")
-        }
-
-        if (profile != null) {
-            profile?.cancel()
-        }
-        if (category != null) {
-            category?.cancel()
-        }
-        if (books != null) {
-            books?.cancel()
-        }
-    }
-
     companion object {
-        fun newInstance(): Discover =
-            Discover()
+        fun newInstance(): Discover = Discover()
     }
 
     override fun onBackPressed(): Boolean {
         return false
     }
 
-    private fun category() {
-        if (internetDetector?.checkMobileInternetConn(activity!!)!!) {
-            category = RetrofitClient.instanceClient.category()
-            category?.enqueue(object : Callback<CategoryListDto> {
-                @SuppressLint("DefaultLocale", "SetTextI18n")
-                override fun onResponse(
-                    call: Call<CategoryListDto>,
-                    response: Response<CategoryListDto>
-                ) {
-                    Log.e("onResponse", response.toString())
-                    when {
-                        response.code() == 200 -> {
-                            when (response.body()?.status) {
-                                200 -> {
-                                    categoryData = response.body()!!.data.toMutableList()
-                                    lay_no_data.visibility = View.GONE
-                                    lay_no_internet.visibility = View.GONE
-                                    lay_data.visibility = View.VISIBLE
-                                    view_category?.apply {
-                                        view_category?.layoutManager =
-                                            LinearLayoutManager(
-                                                requireContext(),
-                                                LinearLayoutManager.HORIZONTAL,
-                                                false
-                                            )
-                                        view_category?.setHasFixedSize(true)
-                                        val categoryAdapter =
-                                            CategoryAdapter(categoryData, requireActivity())
-                                        view_category?.adapter = categoryAdapter
+    private fun banner() {
+        if (!lay_shimmer.isShimmerStarted) {
+            lay_shimmer.startShimmer()
+        }
+        banner = RetrofitClient.instanceClient.getBanners()
+        banner?.enqueue(object : Callback<BannerListDto> {
+            @SuppressLint("DefaultLocale", "SetTextI18n")
+            override fun onResponse(
+                call: Call<BannerListDto>,
+                response: Response<BannerListDto>
+            ) {
+                Log.e("onResponse", response.toString())
+                when {
+                    response.code() == 200 -> {
+                        when (response.body()?.status) {
+                            200 -> {
+                                val banner = arrayListOf<String>()
+                                for (i in response.body()!!.data?.toMutableList()!!) {
+                                    banner.add(i.banner.toString())
+                                }
+                                view_pager.adapter = ViewPagerAdapter(requireContext(), banner)
+                                worm_dots_indicator.setViewPager(view_pager)
+                                try {
+                                    var currentPage = 0
+                                    val update = Runnable {
+                                        if (currentPage == banner.size) {
+                                            currentPage = 0
+                                        }
+                                        view_pager.setCurrentItem(currentPage++, true)
                                     }
+                                    timer?.schedule(object : TimerTask() {
+                                        override fun run() {
+                                            handler.post(update)
+                                        }
+                                    }, 1000, 3000)
+                                } catch (exception: java.lang.Exception) {
+                                    Log.e("Exception", exception.message.toString())
                                 }
-                                204 -> {
-                                    lay_no_data.visibility = View.VISIBLE
-                                    lay_data.visibility = View.GONE
-                                    lay_no_internet.visibility = View.GONE
-                                }
-                                else -> {
-                                    coordinatorErrorMessage(
-                                        lay_root,
-                                        response.message()
-                                    )
-                                }
+                                view_pager.setOnItemClickListener(object :
+                                    ClickableViewPager.OnItemClickListener {
+                                    override fun onItemClick(position: Int) {
+                                        val role = getData(Enums.Role.value, requireContext())
+                                        if (role == Enums.Admin.value) {
+                                            startActivity(
+                                                Intent(
+                                                    requireActivity(),
+                                                    Banner::class.java
+                                                )
+                                            )
+                                        }
+                                    }
+                                })
+                            }
+                            else -> {
+                                coordinatorErrorMessage(
+                                    lay_root,
+                                    response.message()
+                                )
                             }
                         }
+                    }
 
-                        response.code() == 422 || response.code() == 400 -> {
-                            try {
-                                val adapter: JsonAdapter<ErrorMsgDto> =
-                                    moshi.adapter(ErrorMsgDto::class.java)
-                                val errorResponse =
-                                    adapter.fromJson(response.errorBody()!!.string())
-                                if (errorResponse != null) {
-                                    if (errorResponse.status == 400) {
-                                        coordinatorErrorMessage(
-                                            lay_root,
-                                            errorResponse.message
-                                        )
-                                    } else {
-                                        coordinatorErrorMessage(
-                                            lay_root,
-                                            errorResponse.message
-                                        )
-                                    }
-
+                    response.code() == 422 || response.code() == 400 -> {
+                        try {
+                            val adapter: JsonAdapter<ErrorMsgDto> =
+                                moshi.adapter(ErrorMsgDto::class.java)
+                            val errorResponse =
+                                adapter.fromJson(response.errorBody()!!.string())
+                            if (errorResponse != null) {
+                                if (errorResponse.status == 400) {
+                                    coordinatorErrorMessage(
+                                        lay_root,
+                                        errorResponse.message
+                                    )
                                 } else {
                                     coordinatorErrorMessage(
                                         lay_root,
-                                        getString(R.string.msg_something_wrong)
-                                    )
-                                    Log.e(
-                                        "Response",
-                                        response.body()!!.toString()
+                                        errorResponse.message
                                     )
                                 }
-                            } catch (e: Exception) {
+
+                            } else {
                                 coordinatorErrorMessage(
                                     lay_root,
                                     getString(R.string.msg_something_wrong)
                                 )
-                                Log.e("Exception", e.toString())
+                                Log.e(
+                                    "Response",
+                                    response.body()!!.toString()
+                                )
                             }
-
-                        }
-
-                        response.code() == 401 -> {
-                            sessionExpired(activity!!)
-                        }
-                        else -> {
+                        } catch (e: Exception) {
                             coordinatorErrorMessage(
                                 lay_root,
-                                response.message()
+                                getString(R.string.msg_something_wrong)
                             )
+                            Log.e("Exception", e.toString())
                         }
+
                     }
+
+                    response.code() == 401 -> {
+                        sessionExpired(activity!!)
+                    }
+                    else -> {
+                        coordinatorErrorMessage(
+                            lay_root,
+                            response.message()
+                        )
+                    }
+                }
+                lay_shimmer.visibility = View.GONE
+                lay_shimmer.stopShimmer()
+            }
+
+            override fun onFailure(call: Call<BannerListDto>, t: Throwable) {
+                Log.e("onFailure", t.message.toString())
+                if (!call.isCanceled) {
+                    coordinatorErrorMessage(
+                        lay_root,
+                        getString(R.string.msg_something_wrong)
+                    )
                     lay_shimmer.visibility = View.GONE
                     lay_shimmer.stopShimmer()
                 }
+            }
+        })
+    }
 
-                override fun onFailure(call: Call<CategoryListDto>, t: Throwable) {
-                    Log.e("onFailure", t.message.toString())
-                    if (!call.isCanceled) {
+    private fun category() {
+        if (!lay_shimmer.isShimmerStarted) {
+            lay_shimmer.startShimmer()
+        }
+        category = RetrofitClient.instanceClient.category()
+        category?.enqueue(object : Callback<CategoryListDto> {
+            @SuppressLint("DefaultLocale", "SetTextI18n")
+            override fun onResponse(
+                call: Call<CategoryListDto>,
+                response: Response<CategoryListDto>
+            ) {
+                Log.e("onResponse", response.toString())
+                when {
+                    response.code() == 200 -> {
+                        when (response.body()?.status) {
+                            200 -> {
+                                categoryData = response.body()!!.data.toMutableList()
+                                lay_no_data.visibility = View.GONE
+                                lay_no_internet.visibility = View.GONE
+                                lay_data.visibility = View.VISIBLE
+                                view_category?.apply {
+                                    view_category?.layoutManager =
+                                        LinearLayoutManager(
+                                            requireContext(),
+                                            LinearLayoutManager.HORIZONTAL,
+                                            false
+                                        )
+                                    view_category?.setHasFixedSize(true)
+                                    val categoryAdapter =
+                                        CategoryAdapter(categoryData, requireActivity())
+                                    view_category?.adapter = categoryAdapter
+                                }
+                            }
+                            204 -> {
+                                lay_no_data.visibility = View.VISIBLE
+                                lay_data.visibility = View.GONE
+                                lay_no_internet.visibility = View.GONE
+                            }
+                            else -> {
+                                coordinatorErrorMessage(
+                                    lay_root,
+                                    response.message()
+                                )
+                            }
+                        }
+                    }
+
+                    response.code() == 422 || response.code() == 400 -> {
+                        try {
+                            val adapter: JsonAdapter<ErrorMsgDto> =
+                                moshi.adapter(ErrorMsgDto::class.java)
+                            val errorResponse =
+                                adapter.fromJson(response.errorBody()!!.string())
+                            if (errorResponse != null) {
+                                if (errorResponse.status == 400) {
+                                    coordinatorErrorMessage(
+                                        lay_root,
+                                        errorResponse.message
+                                    )
+                                } else {
+                                    coordinatorErrorMessage(
+                                        lay_root,
+                                        errorResponse.message
+                                    )
+                                }
+
+                            } else {
+                                coordinatorErrorMessage(
+                                    lay_root,
+                                    getString(R.string.msg_something_wrong)
+                                )
+                                Log.e(
+                                    "Response",
+                                    response.body()!!.toString()
+                                )
+                            }
+                        } catch (e: Exception) {
+                            coordinatorErrorMessage(
+                                lay_root,
+                                getString(R.string.msg_something_wrong)
+                            )
+                            Log.e("Exception", e.toString())
+                        }
+
+                    }
+
+                    response.code() == 401 -> {
+                        sessionExpired(activity!!)
+                    }
+                    else -> {
                         coordinatorErrorMessage(
                             lay_root,
-                            getString(R.string.msg_something_wrong)
+                            response.message()
                         )
-                        lay_shimmer.visibility = View.GONE
-                        lay_shimmer.stopShimmer()
                     }
                 }
-            })
+                lay_shimmer.visibility = View.GONE
+                lay_shimmer.stopShimmer()
+            }
 
-        } else {
-            lay_shimmer.visibility = View.GONE
-            lay_shimmer.stopShimmer()
-            lay_no_data.visibility = View.GONE
-            lay_data.visibility = View.GONE
-            lay_no_internet.visibility = View.VISIBLE
-        }
+            override fun onFailure(call: Call<CategoryListDto>, t: Throwable) {
+                Log.e("onFailure", t.message.toString())
+                if (!call.isCanceled) {
+                    coordinatorErrorMessage(
+                        lay_root,
+                        getString(R.string.msg_something_wrong)
+                    )
+                    lay_shimmer.visibility = View.GONE
+                    lay_shimmer.stopShimmer()
+                }
+            }
+        })
     }
 
     private fun books() {
+        if (!lay_shimmer.isShimmerStarted) {
+            lay_shimmer.startShimmer()
+        }
         books = RetrofitClient.instanceClientWithoutToken.getHome()
         books?.enqueue(object : Callback<HomeDto> {
             @SuppressLint("DefaultLocale", "SetTextI18n")
@@ -418,6 +476,9 @@ class Discover : Fragment(), IOnBackPressed {
     }
 
     private fun loadProfileInfo() {
+        if (!lay_shimmer.isShimmerStarted) {
+            lay_shimmer.startShimmer()
+        }
         profile = RetrofitClient.instanceClient.profile()
         profile?.enqueue(object : Callback<ProDto> {
             @SuppressLint("DefaultLocale", "SetTextI18n")
@@ -513,6 +574,54 @@ class Discover : Fragment(), IOnBackPressed {
                 Log.e("onFailure", t.message.toString())
             }
         })
+    }
+
+    override fun onStop() {
+        super.onStop()
+        try {
+            timer!!.cancel()
+            timer!!.purge()
+            timer = null
+        } catch (e: Exception) {
+            println("Timer Ex: $e")
+        }
+
+        if (profile != null) {
+            profile?.cancel()
+        }
+        if (category != null) {
+            category?.cancel()
+        }
+        if (books != null) {
+            books?.cancel()
+        }
+        if (banner != null) {
+            banner?.cancel()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        try {
+            timer!!.cancel()
+            timer!!.purge()
+            timer = null
+        } catch (e: Exception) {
+            println("Timer Ex: $e")
+        }
+
+        if (profile != null) {
+            profile?.cancel()
+        }
+        if (category != null) {
+            category?.cancel()
+        }
+        if (books != null) {
+            books?.cancel()
+        }
+        if (banner != null) {
+            banner?.cancel()
+        }
     }
 
 }
