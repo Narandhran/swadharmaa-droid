@@ -118,6 +118,8 @@ class Users : AppCompatActivity() {
                                     lay_no_data.visibility = View.GONE
                                     lay_no_internet.visibility = View.GONE
                                     lay_data.visibility = View.VISIBLE
+                                    txt_total_user.visibility = View.VISIBLE
+                                    txt_total_user.text = userData.size.toString()
                                     view_users?.apply {
                                         view_users?.layoutManager = LinearLayoutManager(
                                             this@Users,
@@ -133,6 +135,7 @@ class Users : AppCompatActivity() {
                                     lay_no_data.visibility = View.VISIBLE
                                     lay_data.visibility = View.GONE
                                     lay_no_internet.visibility = View.GONE
+                                    txt_total_user.visibility = View.GONE
                                 }
                                 else -> {
                                     coordinatorErrorMessage(

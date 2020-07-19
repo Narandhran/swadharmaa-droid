@@ -108,8 +108,8 @@ class Book : AppCompatActivity() {
                                             this@Book
                                         ) + Enums.Book.value + response.body()!!.data.thumbnail
                                     )
-                                    .error(R.drawable.img_placeholder)
-                                    .placeholder(R.drawable.img_placeholder)
+                                    .error(R.drawable.img_place_holder)
+                                    .placeholder(R.drawable.img_place_holder)
                                     .fit()
                                     .into(img_book)
 

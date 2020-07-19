@@ -38,8 +38,7 @@ class BannerAdapter(
                     "rootPath",
                     activity.applicationContext
                 ) + Enums.Banner.value + data.banner
-            ).placeholder(R.drawable.im_holder)
-                .fit()
+            ).placeholder(R.drawable.im_banner_holder)
                 .into(holder.imgBanner)
             holder.bind(data, listener)
             val role = getData(Enums.Role.value, activity.applicationContext)

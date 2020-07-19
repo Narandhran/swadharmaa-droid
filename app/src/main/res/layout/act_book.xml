@@ -23,7 +23,7 @@
                 android:layout_height="360dp"
                 android:layout_gravity="center"
                 android:scaleType="centerCrop"
-                android:src="@drawable/img_placeholder"
+                android:src="@drawable/img_place_holder"
                 app:siShape="@drawable/bgbook_rounded" />
 
             <androidx.appcompat.widget.LinearLayoutCompat

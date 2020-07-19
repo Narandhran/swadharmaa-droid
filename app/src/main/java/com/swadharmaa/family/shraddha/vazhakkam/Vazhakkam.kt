@@ -100,6 +100,8 @@ class Vazhakkam : Fragment(), IOnBackPressed {
                                         response.body()!!.data?.shraardhaInfo!!.shraddha_vazhakkam?.krusaram.toString()
                                     txt_pundra_dharanam.text =
                                         response.body()!!.data?.shraardhaInfo!!.shraddha_vazhakkam?.pundraDharanam.toString()
+                                    txt_other.text =
+                                        response.body()!!.data?.shraardhaInfo!!.shraddha_vazhakkam?.other.toString()
 
                                     btn_edit.setOnClickListener {
                                         val jsonAdapter: JsonAdapter<FamilyData> =

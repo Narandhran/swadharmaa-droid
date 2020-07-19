@@ -31,8 +31,8 @@ class ViewPagerAdapter(private val context: Context, private val uri: MutableLis
         val view: View = layoutInflater?.inflate(R.layout.custom_image_banner, null)!!
         val imageView: ImageView = view.findViewById(R.id.img_banner) as ImageView
         Picasso.get().load(getData("rootPath", context) + Enums.Banner.value + uri[position])
-            .error(R.drawable.im_holder)
-            .placeholder(R.drawable.im_holder)
+            .error(R.drawable.im_banner_holder)
+            .placeholder(R.drawable.im_banner_holder)
             .fit()
             .into(imageView)
         val vp = container as ViewPager

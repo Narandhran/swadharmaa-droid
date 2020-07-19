@@ -48,12 +48,27 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
+                    android:layout_toStartOf="@+id/txt_total_user"
                     android:layout_toEndOf="@+id/im_back"
                     android:theme="@style/CustomSearch"
                     app:iconifiedByDefault="false"
                     app:queryBackground="@android:color/transparent"
                     app:queryHint="Search in 'Users'"
                     app:searchIcon="@null" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/txt_total_user"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerInParent="true"
+                    android:layout_marginEnd="15dp"
+                    android:background="@drawable/bg_oval"
+                    android:fontFamily="@font/lato_bold"
+                    android:gravity="center"
+                    android:padding="5dp"
+                    android:textColor="@color/theme_main"
+                    android:textSize="14sp" />
 
             </RelativeLayout>
         </com.google.android.material.card.MaterialCardView>

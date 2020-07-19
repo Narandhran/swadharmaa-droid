@@ -37,7 +37,7 @@
                         android:layout_height="match_parent"
                         android:layout_gravity="center"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/im_holder"
+                        android:src="@drawable/img_place_holder"
                         app:siShape="@drawable/bgtop_rounded" />
 
                     <com.google.android.material.textview.MaterialTextView

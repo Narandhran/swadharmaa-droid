@@ -1,6 +1,7 @@
 package com.swadharmaa.user
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
@@ -10,6 +11,7 @@ import android.os.Handler
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -19,11 +21,15 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
+import com.razorpay.Checkout
+import com.razorpay.PaymentData
+import com.razorpay.PaymentResultWithDataListener
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.squareup.picasso.Picasso
 import com.swadharmaa.BuildConfig
+import com.swadharmaa.Home
 import com.swadharmaa.R
 import com.swadharmaa.book.AddBook
 import com.swadharmaa.category.AddCategory
@@ -33,14 +39,16 @@ import com.swadharmaa.server.InternetDetector
 import com.swadharmaa.server.RetrofitClient
 import com.swadharmaa.server.RetrofitWithBar
 import kotlinx.android.synthetic.main.act_profile.*
+import kotlinx.android.synthetic.main.dialog_amount.*
 import org.apache.commons.lang3.StringUtils
+import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.util.*
 
 
-class Profile : AppCompatActivity() {
+class Profile : AppCompatActivity(), PaymentResultWithDataListener {
 
     var myApp: Application? = null
     private var profile: Call<ProDto>? = null
@@ -79,7 +87,7 @@ class Profile : AppCompatActivity() {
                     moshi.adapter(ProData::class.java)
                 val json: String = jsonAdapter.toJson(profileData[0])
                 val intent = Intent(this@Profile, Register::class.java)
-                intent.putExtra("data", json)
+                intent.putExtra(getString(R.string.data), json)
                 this.startActivity(intent)
                 this.overridePendingTransition(
                     R.anim.fade_in,
@@ -119,8 +127,12 @@ class Profile : AppCompatActivity() {
             startActivity(Intent(this@Profile, Favourite::class.java))
         }
 
+        lay_edit.setOnClickListener {
+            startActivity(Intent(this@Profile, About::class.java))
+        }
+
         lay_donate.setOnClickListener {
-            showMessage(layout_refresh, "Work-in progress")
+            donate()
         }
 
         if (internet?.checkMobileInternetConn(this)!!) {
@@ -489,4 +501,278 @@ class Profile : AppCompatActivity() {
         loadProfileInfo()
     }
 
+    private fun donate() {
+        val dialog = Dialog(this@Profile, R.style.DialogTheme)
+        dialog.setContentView(R.layout.dialog_amount)
+        dialog.btn_next.setOnClickListener {
+            dialog.lay_amount.error = null
+            if (dialog.edt_amount.length() < 1) {
+                dialog.lay_amount.error = "Please enter the amount."
+            } else {
+                if (internet?.checkMobileInternetConn(this@Profile)!!) {
+                    try {
+                        val mapData: HashMap<String, Int> = HashMap()
+                        mapData["amount"] = dialog.edt_amount.text.toString().toInt() * 100
+                        Log.e("mapData", mapData.toString())
+                        val placeOrder = RetrofitClient.instanceClient.donate(mapData)
+                        placeOrder.enqueue(
+                            RetrofitWithBar(this@Profile, object :
+                                Callback<DonateDto> {
+                                @SuppressLint("SetTextI18n")
+                                override fun onResponse(
+                                    call: Call<DonateDto>,
+                                    response: Response<DonateDto>
+                                ) {
+                                    Log.e("onResponse", response.body().toString())
+                                    when {
+                                        response.code() == 200 -> {
+                                            if (response.body()?.status == 200) {
+                                                dialog.edt_amount.let { v ->
+                                                    val imm =
+                                                        getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                                                    imm?.hideSoftInputFromWindow(v.windowToken, 0)
+                                                }
+                                                Handler().postDelayed({
+                                                    dialog.edt_amount
+                                                }, 200)
+                                                dialog.cancel()
+                                                startPayment(
+                                                    order_id = response.body()!!.data?.id.toString(),
+                                                    amount = response.body()!!.data?.amount.toString()
+                                                )
+                                            } else {
+                                                showErrorMessage(
+                                                    dialog.lay_amount,
+                                                    getString(R.string.msg_something_wrong)
+                                                )
+                                                Log.e("Response", response.body().toString())
+                                            }
+                                        }
+
+                                        response.code() == 422 || response.code() == 400 -> {
+                                            try {
+                                                val moshi: Moshi = Moshi.Builder().build()
+                                                val adapter: JsonAdapter<ErrorMsgDto> =
+                                                    moshi.adapter(ErrorMsgDto::class.java)
+                                                val errorResponse =
+                                                    adapter.fromJson(
+                                                        response.errorBody()!!.string()
+                                                    )
+                                                if (errorResponse != null) {
+                                                    if (errorResponse.status == 422) {
+                                                        showErrorMessage(
+                                                            dialog.lay_amount,
+                                                            errorResponse.message
+                                                        )
+                                                    } else {
+                                                        showErrorMessage(
+                                                            dialog.lay_amount,
+                                                            errorResponse.message
+                                                        )
+                                                    }
+
+                                                } else {
+                                                    showErrorMessage(
+                                                        dialog.lay_amount,
+                                                        getString(R.string.msg_something_wrong)
+                                                    )
+                                                    Log.e("Response", response.body()!!.toString())
+                                                }
+                                            } catch (e: Exception) {
+                                                showErrorMessage(
+                                                    dialog.lay_amount,
+                                                    getString(R.string.msg_something_wrong)
+                                                )
+                                                Log.e("Mapping Exception", e.toString())
+                                            }
+                                        }
+
+                                        response.code() == 401 -> {
+                                            sessionExpired(this@Profile)
+                                        }
+                                        else -> {
+                                            showErrorMessage(dialog.lay_amount, response.message())
+                                        }
+                                    }
+                                }
+
+                                override fun onFailure(call: Call<DonateDto>, t: Throwable) {
+                                    Log.e("onFailure", t.toString())
+                                    showErrorMessage(
+                                        dialog.lay_amount,
+                                        getString(R.string.msg_something_wrong)
+                                    )
+                                }
+                            })
+                        )
+                    } catch (e: Exception) {
+                        Log.d("ParseException", e.toString())
+                        e.printStackTrace()
+                    }
+
+                } else {
+                    showErrorMessage(dialog.lay_amount, getString(R.string.msg_no_internet))
+                }
+            }
+        }
+        dialog.show()
+    }
+
+    private fun startPayment(order_id: String, amount: String) {
+        val checkout = Checkout()
+        checkout.setKeyID(getString(R.string.razorpay_key))
+        val activity: Activity = this
+
+        try {
+            val options = JSONObject()
+            options.put("name", getString(R.string.app_name))
+            options.put("description", "Donation")
+            options.put("image", "https://s3.amazonaws.com/rzp-mobile/images/rzp.png")
+            options.put("order_id", order_id)
+            options.put("currency", "INR")
+            val prefill = JSONObject()
+            prefill.put("email", getData("username", applicationContext))
+            prefill.put("contact", getData("mobile", applicationContext))
+            options.put("prefill", prefill)
+            /**
+             * Amount is always passed in currency subunits
+             * Eg: "500" = INR 5.00
+             */
+            options.put("amount", amount)
+            checkout.open(activity, options)
+
+        } catch (e: Exception) {
+            Toast.makeText(activity, "Error in payment: " + e.message, Toast.LENGTH_LONG).show()
+            e.printStackTrace()
+        }
+    }
+
+    override fun onPaymentError(
+        errorCode: Int,
+        errorDescription: String?,
+        paymentData: PaymentData?
+    ) {
+        Log.e(
+            "onPaymentError",
+            "onError: $errorCode : $errorDescription : ${paymentData?.data.toString()}"
+        )
+    }
+
+    override fun onPaymentSuccess(rzpPaymentId: String?, paymentData: PaymentData?) {
+        Log.e(
+            "onPaymentSuccess",
+            "\n --- orderId : ${paymentData?.orderId} " +
+                    "\n --- paymentId : ${paymentData?.paymentId}" +
+                    "\n --- signature : ${paymentData?.signature}"
+        )
+        val verifyPaymentData =
+            VerifyPayment(
+                razorpay_order_id = paymentData?.orderId!!,
+                razorpay_payment_id = paymentData.paymentId!!,
+                razorpay_signature = paymentData.signature!!
+            )
+        Log.e("verifyPaymentData", verifyPaymentData.toString())
+        verifyPayment(verifyPaymentData)
+    }
+
+    private fun verifyPayment(verify: VerifyPayment) {
+        if (internet?.checkMobileInternetConn(this@Profile)!!) {
+            try {
+                val verifyPayment = RetrofitClient.instanceClient.verifyPayment(verify)
+                verifyPayment.enqueue(
+                    RetrofitWithBar(this@Profile, object :
+                        Callback<ResDto> {
+                        @SuppressLint("SetTextI18n")
+                        override fun onResponse(call: Call<ResDto>, response: Response<ResDto>) {
+                            Log.e("onResponse", response.toString())
+                            when {
+                                response.code() == 200 -> {
+                                    if (response.body()?.status == 200) {
+                                        Handler().postDelayed({
+                                            startActivity(Intent(this@Profile, Home::class.java))
+                                            this@Profile.overridePendingTransition(
+                                                R.anim.fade_in,
+                                                R.anim.fade_out
+                                            )
+                                            finish()
+                                        }, 200)
+                                    } else {
+                                        showErrorMessage(
+                                            layout_refresh,
+                                            getString(R.string.msg_something_wrong)
+                                        )
+                                        Log.e("Response", response.body().toString())
+                                    }
+                                }
+
+                                response.code() == 422 || response.code() == 400 -> {
+                                    try {
+                                        val moshi: Moshi = Moshi.Builder().build()
+                                        val adapter: JsonAdapter<ErrorMsgDto> =
+                                            moshi.adapter(ErrorMsgDto::class.java)
+                                        val errorResponse =
+                                            adapter.fromJson(
+                                                response.errorBody()!!.string()
+                                            )
+                                        if (errorResponse != null) {
+                                            if (errorResponse.status == 422) {
+                                                showErrorMessage(
+                                                    layout_refresh,
+                                                    errorResponse.message
+                                                )
+                                            } else {
+                                                showErrorMessage(
+                                                    layout_refresh,
+                                                    errorResponse.message
+                                                )
+                                            }
+
+                                        } else {
+                                            showErrorMessage(
+                                                layout_refresh,
+                                                getString(R.string.msg_something_wrong)
+                                            )
+                                            Log.e("Response", response.body()!!.toString())
+                                        }
+                                    } catch (e: Exception) {
+                                        showErrorMessage(
+                                            layout_refresh,
+                                            getString(R.string.msg_something_wrong)
+                                        )
+                                        Log.e("Mapping Exception", e.toString())
+                                    }
+                                }
+
+                                response.code() == 401 -> {
+                                    sessionExpired(
+                                        this@Profile
+                                    )
+                                }
+                                else -> {
+                                    showErrorMessage(
+                                        layout_refresh,
+                                        response.message()
+                                    )
+                                }
+                            }
+                        }
+
+                        override fun onFailure(call: Call<ResDto>, t: Throwable) {
+                            Log.e("onFailure", t.toString())
+                            showErrorMessage(
+                                layout_refresh,
+                                getString(R.string.msg_something_wrong)
+                            )
+                        }
+                    })
+                )
+            } catch (e: Exception) {
+                Log.d("ParseException", e.toString())
+                e.printStackTrace()
+            }
+
+        } else {
+            showErrorMessage(layout_refresh, getString(R.string.msg_no_internet))
+        }
+    }
 }

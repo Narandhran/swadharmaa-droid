@@ -156,5 +156,10 @@
     <string name="skip">skip</string>
     <string name="there_is_no_samayal_information">There is no samayal information.</string>
     <string name="see_all">See all</string>
+    <string name="next">Next</string>
+    <string name="amount">Amount</string>
+    <string name="thanks_for_you_support_we_really_appreciate_your_work">Thanks for you support. We really appreciate your work.</string>
+    <string name="razorpay_key">rzp_test_TqKfdz25XUCI9M</string>
+    <string name="about_us">About Us</string>
 
 </resources>

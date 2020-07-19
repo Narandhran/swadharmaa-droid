@@ -88,3 +88,21 @@ data class Verify(
     var expire: String,
     var otp: Int
 )
+
+data class DonateDto(
+    var contentFound: Boolean?,
+    var `data`: DonateData?,
+    var message: String?,
+    var status: Int?
+)
+
+data class DonateData(
+    var amount: Int?,
+    var id: String?
+)
+
+data class VerifyPayment(
+    var razorpay_order_id: String,
+    var razorpay_payment_id: String,
+    var razorpay_signature: String
+)

@@ -393,4 +393,24 @@ class Banner : AppCompatActivity() {
                 .start(this@Banner)
         }
     }
+
+    override fun onStop() {
+        super.onStop()
+        if (banner != null) {
+            banner?.cancel()
+        }
+        if (getBanner != null) {
+            getBanner?.cancel()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (banner != null) {
+            banner?.cancel()
+        }
+        if (getBanner != null) {
+            getBanner?.cancel()
+        }
+    }
 }

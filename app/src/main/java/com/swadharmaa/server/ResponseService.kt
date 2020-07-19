@@ -155,4 +155,13 @@ interface ResponseService {
     @GET("banner/list")
     fun getBanners(): Call<BannerListDto>
 
+    @FormUrlEncoded
+    @POST("donation/donate")
+    fun donate(@FieldMap params: Map<String, @JvmSuppressWildcards Any>): Call<DonateDto>
+
+    @POST("donation/verify")
+    fun verifyPayment(@Body verifyPayment: VerifyPayment): Call<ResDto>
+
+    @GET("about")
+    fun about(): Call<ResDto>
 }

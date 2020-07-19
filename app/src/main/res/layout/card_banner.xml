@@ -20,7 +20,7 @@
             android:layout_height="150dp"
             android:layout_gravity="center"
             android:scaleType="centerCrop"
-            app:srcCompat="@drawable/im_holder" />
+            app:srcCompat="@drawable/im_banner_holder" />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/img_edit"
