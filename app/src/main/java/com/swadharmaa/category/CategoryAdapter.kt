@@ -11,11 +11,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.github.siyamed.shapeimageview.mask.PorterShapeImageView
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.textview.MaterialTextView
-import com.squareup.picasso.Picasso
 import com.swadharmaa.R
 import com.swadharmaa.discover.SeeAll
 import com.swadharmaa.general.Enums
-import com.swadharmaa.general.getData
+import com.swadharmaa.general.loadImage
 import org.apache.commons.lang3.StringUtils
 
 
@@ -38,13 +37,11 @@ class CategoryAdapter(
         try {
             data = dataList[position]
             holder.txtName.text = StringUtils.capitalize(data.name)
-            Picasso.get().load(
-                getData(
-                    "rootPath",
-                    activity.applicationContext
-                ) + Enums.Category.value + data.thumbnail
-            ).placeholder(R.drawable.img_placeholder).into(holder.imgCategory)
-
+            loadImage(
+                activity.applicationContext,
+                Enums.Category.value + data.thumbnail,
+                holder.imgCategory
+            )
             holder.cardCategory.setOnClickListener {
                 data = dataList[position]
                 val intent = Intent(activity, SeeAll::class.java)

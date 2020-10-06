@@ -134,6 +134,7 @@ class Register : AppCompatActivity() {
                         )
                         .error(R.drawable.ic_dummy_profile)
                         .placeholder(R.drawable.ic_dummy_profile)
+                        .fit()
                         .into(img_profile)
                 }
             }

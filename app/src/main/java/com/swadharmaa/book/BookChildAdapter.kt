@@ -11,10 +11,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.github.siyamed.shapeimageview.mask.PorterShapeImageView
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.textview.MaterialTextView
-import com.squareup.picasso.Picasso
 import com.swadharmaa.R
 import com.swadharmaa.general.Enums
-import com.swadharmaa.general.getData
+import com.swadharmaa.general.loadImage
 import org.apache.commons.lang3.StringUtils
 
 
@@ -37,13 +36,11 @@ class BookChildAdapter(
         try {
             data = dataList[position]
             holder.txtName.text = StringUtils.capitalize(data.name)
-            Picasso.get().load(
-                getData(
-                    "rootPath",
-                    activity.applicationContext
-                ) + Enums.Book.value + data.thumbnail
-            ).placeholder(R.drawable.img_placeholder).into(holder.imgBook)
-
+            loadImage(
+                activity.applicationContext,
+                Enums.Book.value + data.thumbnail,
+                holder.imgBook
+            )
             holder.cardBook.setOnClickListener {
                 data = dataList[position]
                 val intent = Intent(activity, Book::class.java)

@@ -14,10 +14,12 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.swadharmaa.R
 import com.swadharmaa.family.FamilyDto
+import com.swadharmaa.general.getData
 import com.swadharmaa.general.reloadFragment
 import com.swadharmaa.general.sessionExpired
 import com.swadharmaa.general.showErrorMessage
 import com.swadharmaa.interfaces.IOnBackPressed
+import com.swadharmaa.interfaces.OnThithiClickListener
 import com.swadharmaa.server.InternetDetector
 import com.swadharmaa.server.RetrofitClient
 import com.swadharmaa.user.ErrorMsgDto
@@ -29,11 +31,13 @@ import retrofit2.Response
 
 class Thithi : Fragment(), IOnBackPressed {
 
-    private var familyDto: Call<FamilyDto>? = null
+    private var family: Call<FamilyDto>? = null
     private val moshi: Moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
     var internetDetector: InternetDetector? = null
+    var userId: String? = null
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -53,21 +57,33 @@ class Thithi : Fragment(), IOnBackPressed {
             layout_refresh.isRefreshing = false
         }
 
+        userId = this.arguments!!.getString(getString(R.string.userId))
+        family()
+
         btn_add.setOnClickListener {
-            startActivity(Intent(requireActivity(), AddThithi::class.java))
+            val intent = Intent(requireActivity(), AddThithi::class.java)
+            intent.putExtra(getString(R.string.userId), userId)
+            startActivity(intent)
         }
 
         btn_addmore.setOnClickListener {
-            startActivity(Intent(requireActivity(), AddThithi::class.java))
+            val intent = Intent(requireActivity(), AddThithi::class.java)
+            intent.putExtra(getString(R.string.userId), userId)
+            startActivity(intent)
         }
 
-        family()
     }
 
     private fun family() {
         if (internetDetector?.checkMobileInternetConn(requireContext())!!) {
-            familyDto = RetrofitClient.instanceClient.listOfFamily()
-            familyDto?.enqueue(object : Callback<FamilyDto> {
+            family = if (userId != null) {
+                RetrofitClient.instanceClient.listOfFamily(userId!!)
+            } else {
+                RetrofitClient.instanceClient.listOfFamily(
+                    getData("user_id", requireContext()).toString()
+                )
+            }
+            family?.enqueue(object : Callback<FamilyDto> {
                 @SuppressLint("DefaultLocale", "SetTextI18n")
                 override fun onResponse(
                     call: Call<FamilyDto>,
@@ -94,9 +110,27 @@ class Thithi : Fragment(), IOnBackPressed {
                                             )
                                             view_thithi?.setHasFixedSize(true)
                                             val thithiAdapter =
-                                                ThithiAdapter(
-                                                    thihiList,
-                                                    requireActivity()
+                                                ThithiAdapter(thihiList, requireActivity(),
+                                                    object : OnThithiClickListener {
+                                                        override fun onItemClick(item: com.swadharmaa.family.Thithi?) {
+                                                            val jsonAdapter: JsonAdapter<com.swadharmaa.family.Thithi> =
+                                                                moshi.adapter(com.swadharmaa.family.Thithi::class.java)
+                                                            val json = jsonAdapter.toJson(item)
+                                                            val intent = Intent(
+                                                                requireActivity(),
+                                                                AddThithi::class.java
+                                                            )
+                                                            intent.putExtra(
+                                                                getString(R.string.data),
+                                                                json
+                                                            )
+                                                            intent.putExtra(
+                                                                getString(R.string.userId),
+                                                                userId
+                                                            )
+                                                            startActivity(intent)
+                                                        }
+                                                    }
                                                 )
                                             view_thithi?.adapter = thithiAdapter
                                         }
@@ -191,8 +225,8 @@ class Thithi : Fragment(), IOnBackPressed {
 
     override fun onStop() {
         super.onStop()
-        if (familyDto != null) {
-            familyDto?.cancel()
+        if (family != null) {
+            family?.cancel()
         }
     }
 

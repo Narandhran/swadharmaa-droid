@@ -217,8 +217,8 @@ class AddCategory : AppCompatActivity() {
             txt_tips.visibility = View.GONE
             uri = resultUri
             Picasso.get().load(resultUri)
-                .error(R.drawable.img_placeholder)
-                .placeholder(R.drawable.img_placeholder)
+                .error(R.drawable.img_place_holder)
+                .placeholder(R.drawable.img_place_holder)
                 .into(img_category)
         } else if (resultCode == UCrop.RESULT_ERROR) {
 

@@ -116,7 +116,8 @@ data class Vazhakkam(
     var krusaram: Any?,
     var pindamCount: Any?,
     var pundraDharanam: Any?,
-    var tharpanaKoorcham: Any?
+    var tharpanaKoorcham: Any?,
+    var other: Any?
 )
 
 data class Thithi(

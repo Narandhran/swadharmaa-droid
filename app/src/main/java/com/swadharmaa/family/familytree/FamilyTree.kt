@@ -11,11 +11,13 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.swadharmaa.R
-import com.swadharmaa.family.FamilyTreeData
 import com.swadharmaa.family.FamilyDto
+import com.swadharmaa.family.FamilyTreeData
+import com.swadharmaa.general.getData
 import com.swadharmaa.general.reloadActivity
 import com.swadharmaa.general.sessionExpired
 import com.swadharmaa.general.showErrorMessage
+import com.swadharmaa.interfaces.OnFamilyClickListener
 import com.swadharmaa.server.InternetDetector
 import com.swadharmaa.server.RetrofitClient
 import com.swadharmaa.user.ErrorMsgDto
@@ -28,11 +30,12 @@ import retrofit2.Response
 
 class FamilyTree : AppCompatActivity() {
 
-    private var familyDto: Call<FamilyDto>? = null
+    private var family: Call<FamilyDto>? = null
     private val moshi: Moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
     var internetDetector: InternetDetector? = null
+    var userId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,22 +49,33 @@ class FamilyTree : AppCompatActivity() {
         im_back.setOnClickListener {
             onBackPressed()
         }
-
+        userId = intent.getStringExtra(getString(R.string.userId))
         family()
+
         btn_add.setOnClickListener {
-            startActivity(Intent(this@FamilyTree, AddFamilyTree::class.java))
+            val intent = Intent(this@FamilyTree, AddFamilyTree::class.java)
+            intent.putExtra(getString(R.string.userId), userId)
+            startActivity(intent)
         }
 
         txt_edit.setOnClickListener {
-            startActivity(Intent(this@FamilyTree, AddFamilyTree::class.java))
+            val intent = Intent(this@FamilyTree, AddFamilyTree::class.java)
+            intent.putExtra(getString(R.string.userId), userId)
+            startActivity(intent)
         }
     }
 
     private fun family() {
         internetDetector = InternetDetector.getInstance(this@FamilyTree)
         if (internetDetector?.checkMobileInternetConn(applicationContext)!!) {
-            familyDto = RetrofitClient.instanceClient.listOfFamily()
-            familyDto?.enqueue(object : Callback<FamilyDto> {
+            family = if (userId != null) {
+                RetrofitClient.instanceClient.listOfFamily(userId!!)
+            } else {
+                RetrofitClient.instanceClient.listOfFamily(
+                    getData("user_id", applicationContext).toString()
+                )
+            }
+            family?.enqueue(object : Callback<FamilyDto> {
                 @SuppressLint("DefaultLocale", "SetTextI18n")
                 override fun onResponse(
                     call: Call<FamilyDto>,
@@ -88,9 +102,27 @@ class FamilyTree : AppCompatActivity() {
                                             )
                                             view_familytree?.setHasFixedSize(true)
                                             val familyTreeAdapter =
-                                                FamilyTreeAdapter(
-                                                    familyTreeList,
-                                                    this@FamilyTree
+                                                FamilyTreeAdapter(familyTreeList, this@FamilyTree,
+                                                    object : OnFamilyClickListener {
+                                                        override fun onItemClick(item: FamilyTreeData?) {
+                                                            val jsonAdapter: JsonAdapter<FamilyTreeData> =
+                                                                moshi.adapter(FamilyTreeData::class.java)
+                                                            val json = jsonAdapter.toJson(item)
+                                                            val intent = Intent(
+                                                                this@FamilyTree,
+                                                                AddFamilyTree::class.java
+                                                            )
+                                                            intent.putExtra(
+                                                                getString(R.string.data),
+                                                                json
+                                                            )
+                                                            intent.putExtra(
+                                                                getString(R.string.userId),
+                                                                userId
+                                                            )
+                                                            startActivity(intent)
+                                                        }
+                                                    }
                                                 )
                                             view_familytree?.adapter = familyTreeAdapter
                                         }
@@ -189,8 +221,8 @@ class FamilyTree : AppCompatActivity() {
     }
 
     override fun onStop() {
-        if (familyDto != null) {
-            familyDto?.cancel()
+        if (family != null) {
+            family?.cancel()
         }
         super.onStop()
     }

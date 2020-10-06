@@ -12,8 +12,9 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.swadharmaa.R
 import com.swadharmaa.book.StringAdapter
-import com.swadharmaa.family.FamilyDto
 import com.swadharmaa.family.FamilyData
+import com.swadharmaa.family.FamilyDto
+import com.swadharmaa.general.getData
 import com.swadharmaa.general.reloadActivity
 import com.swadharmaa.general.sessionExpired
 import com.swadharmaa.general.showErrorMessage
@@ -29,11 +30,12 @@ import retrofit2.Response
 
 class FamilyInfo : AppCompatActivity() {
 
-    private var familyDto: Call<FamilyDto>? = null
+    private var family: Call<FamilyDto>? = null
     private val moshi: Moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
     private var internetDetector: InternetDetector? = null
+    var userId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,19 +49,27 @@ class FamilyInfo : AppCompatActivity() {
         im_back.setOnClickListener {
             onBackPressed()
         }
-
+        userId = intent.getStringExtra(getString(R.string.userId))
         family()
 
         btn_add.setOnClickListener {
-            startActivity(Intent(this@FamilyInfo, AddFamilyInfo::class.java))
+            val intent = Intent(this@FamilyInfo, AddFamilyInfo::class.java)
+            intent.putExtra(getString(R.string.userId), userId)
+            startActivity(intent)
         }
     }
 
     private fun family() {
         internetDetector = InternetDetector.getInstance(this@FamilyInfo)
         if (internetDetector?.checkMobileInternetConn(applicationContext)!!) {
-            familyDto = RetrofitClient.instanceClient.listOfFamily()
-            familyDto?.enqueue(object : Callback<FamilyDto> {
+            family = if (userId != null) {
+                RetrofitClient.instanceClient.listOfFamily(userId.toString())
+            } else {
+                RetrofitClient.instanceClient.listOfFamily(
+                    getData("user_id", applicationContext).toString()
+                )
+            }
+            family?.enqueue(object : Callback<FamilyDto> {
                 @SuppressLint("DefaultLocale", "SetTextI18n")
                 override fun onResponse(
                     call: Call<FamilyDto>,
@@ -136,6 +146,7 @@ class FamilyInfo : AppCompatActivity() {
                                         val json = jsonAdapter.toJson(response.body()!!.data)
                                         val intent =
                                             Intent(this@FamilyInfo, AddFamilyInfo::class.java)
+                                        intent.putExtra(getString(R.string.userId), userId)
                                         intent.putExtra(getString(R.string.data), json)
                                         startActivity(intent)
                                     }
@@ -229,8 +240,8 @@ class FamilyInfo : AppCompatActivity() {
     }
 
     override fun onStop() {
-        if (familyDto != null) {
-            familyDto?.cancel()
+        if (family != null) {
+            family?.cancel()
         }
         super.onStop()
     }

@@ -8,7 +8,8 @@ object Constants {
     const val PERMISSION_ALL = 1
     val PERMISSIONS = arrayOf(
         Manifest.permission.CAMERA,
-        Manifest.permission.READ_EXTERNAL_STORAGE
+        Manifest.permission.READ_EXTERNAL_STORAGE,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE
     )
 
     // ImageUpload

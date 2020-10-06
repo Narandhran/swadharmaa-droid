@@ -22,7 +22,6 @@
             android:paddingBottom="20dp">
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/lay_relationship"
                 style="@style/MaterialInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -76,7 +75,6 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/lay_masam_sauramanam"
                 style="@style/MaterialInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -105,7 +103,6 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/lay_masam_chandramanam"
                 style="@style/MaterialInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -134,7 +131,6 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/lay_paksham"
                 style="@style/MaterialInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -164,7 +160,6 @@
 
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/lay_thithi"
                 style="@style/MaterialInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -200,7 +195,6 @@
 
 
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/lay_date"
                     style="@style/MaterialInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -230,7 +224,6 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/lay_time"
                     style="@style/MaterialInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

@@ -3,25 +3,29 @@ package com.swadharmaa.family.familytree
 import `in`.galaxyofandroid.spinerdialog.SpinnerDialog
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
+import android.app.Dialog
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
 import android.util.Log
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
+import com.google.android.material.textview.MaterialTextView
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.swadharmaa.R
 import com.swadharmaa.family.FamilyBody
-import com.swadharmaa.family.FamilyTreeData
 import com.swadharmaa.family.FamilyDto
-import com.swadharmaa.general.inputDateFormat
-import com.swadharmaa.general.sessionExpired
-import com.swadharmaa.general.showErrorMessage
-import com.swadharmaa.general.showMessage
+import com.swadharmaa.family.FamilyTreeData
+import com.swadharmaa.general.*
 import com.swadharmaa.server.InternetDetector
 import com.swadharmaa.server.RetrofitClient
 import com.swadharmaa.server.RetrofitWithBar
@@ -42,11 +46,13 @@ class AddFamilyTree : AppCompatActivity() {
     private var mMonth = 0
     private var mDay = 0
     private var dob: String = ""
+    private var family: Call<FamilyDto>? = null
     private val moshi: Moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
     var internet: InternetDetector? = null
-    var id: String? = null
+    var treeId: String? = null
+    var userId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,6 +64,7 @@ class AddFamilyTree : AppCompatActivity() {
             onBackPressed()
         }
         internet = InternetDetector.getInstance(this@AddFamilyTree)
+        userId = intent.getStringExtra(getString(R.string.userId))
 
         try {
             val data = intent.getStringExtra(getString(R.string.data))
@@ -66,7 +73,7 @@ class AddFamilyTree : AppCompatActivity() {
                     moshi.adapter(FamilyTreeData::class.java)
                 val familyTreeData: FamilyTreeData? = jsonAdapter.fromJson(data.toString())
                 println(familyTreeData)
-                id = familyTreeData?._id.toString()
+                treeId = familyTreeData?._id.toString()
                 edt_name.setText(familyTreeData?.name)
                 edt_relationship.setText(familyTreeData?.relationship)
                 edt_dob.setText(familyTreeData?.dateOfBirth)
@@ -93,7 +100,43 @@ class AddFamilyTree : AppCompatActivity() {
             spinnerDialog.setCancellable(true) // for cancellable
             spinnerDialog.setShowKeyboard(false)// for open keyboard by default
             spinnerDialog.bindOnSpinerListener { item, position ->
-                edt_relationship.setText(item)
+                if (item == getString(R.string.other)) {
+                    val dialog = Dialog(this@AddFamilyTree, R.style.DialogTheme)
+                    dialog.setContentView(R.layout.dialog_add_genre)
+                    val txtTips: MaterialTextView = dialog.findViewById(R.id.txt_tips)
+                    val layName: TextInputLayout = dialog.findViewById(R.id.lay_name)
+                    val edtName: TextInputEditText = dialog.findViewById(R.id.edt_name)
+                    val btnCreate: MaterialButton = dialog.findViewById(R.id.btn_create)
+                    txtTips.visibility = View.GONE
+                    layName.hint = "Relationship"
+                    btnCreate.text = getString(R.string.add)
+                    btnCreate.setOnClickListener {
+                        try {
+                            layName.error = null
+                            if (edtName.length() < 2) {
+                                layName.error = "Relationship's minimum character is 2."
+                            } else {
+                                edt_relationship.text = edtName.text
+                                edtName.let { v ->
+                                    val imm =
+                                        getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                                    imm?.hideSoftInputFromWindow(v.windowToken, 0)
+                                }
+                                Handler().postDelayed({
+                                    edtName.setText("")
+                                }, 200)
+                                dialog.cancel()
+                            }
+
+                        } catch (e: Exception) {
+                            Log.d("ParseException", e.toString())
+                            e.printStackTrace()
+                        }
+                    }
+                    dialog.show()
+                } else {
+                    edt_relationship.setText(item)
+                }
             }
             spinnerDialog.showSpinerDialog()
         }
@@ -122,9 +165,9 @@ class AddFamilyTree : AppCompatActivity() {
                 }, mYear, mMonth, mDay
             )
             val min =
-                System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 365.25 * 75
+                System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 365.25 * 100
             val max =
-                System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 365.25 * 18
+                System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 365.25 * 5
             datePickerDialog.datePicker.minDate = min.toLong()
             datePickerDialog.datePicker.maxDate = max.toLong()
             datePickerDialog.setTitle("")
@@ -193,55 +236,12 @@ class AddFamilyTree : AppCompatActivity() {
 
     private fun family() {
         lay_name.error = null
-//        lay_relationship.error = null
-//        lay_dob.error = null
-//        lay_rashi.error = null
-//        lay_nakshathram.error = null
-//        lay_padham.error = null
-//        lay_city.error = null
-//        lay_mobile.error = null
 
         when {
             edt_name.length() < 3 -> {
                 lay_name.error = "AddName's minimum character is 3."
             }
-//            edt_relationship.length() < 1 -> {
-//                lay_relationship.error = "Relationship is required."
-//            }
-//            edt_dob.length() < 1 -> {
-//                lay_dob.error = "Date of birth is required."
-//            }
-//            edt_rashi.length() < 1 -> {
-//                lay_rashi.error = "Rashi is required."
-//            }
-//            edt_nakshathram.length() < 1 -> {
-//                lay_nakshathram.error = "Nakshathram is required."
-//            }
-//            edt_padham.length() < 1 -> {
-//                lay_padham.error = "Padham is required."
-//            }
-//            edt_city.length() < 2 -> {
-//                lay_city.error = "City's minimum character is 2."
-//            }
-//            edt_mobile.length() != 10 -> {
-//                lay_mobile.error = "Enter the valid mobile number."
-//            }
             else -> {
-//                val map: HashMap<String, HashMap<String, Any>> = HashMap()
-//                val mapData: HashMap<String, Any> = HashMap()
-//                mapData["name"] = edt_name.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["relationship"] =
-//                    edt_relationship.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["dateOfBirth"] = edt_dob.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["rashi"] = edt_rashi.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["nakshathram"] =
-//                    edt_nakshathram.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["padham"] = edt_padham.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["city"] = edt_city.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["mobileNumber"] =
-//                    edt_mobile.text.toString().toLowerCase(Locale.getDefault())
-//                map["familyTree"] = mapData
-
                 val familyBody = FamilyBody(
                     name = edt_name.text.toString().toLowerCase(Locale.getDefault()),
                     relationship = edt_relationship.text.toString()
@@ -255,10 +255,32 @@ class AddFamilyTree : AppCompatActivity() {
                 )
 
                 if (internet!!.checkMobileInternetConn(this@AddFamilyTree)) {
-                    if (id.isNullOrEmpty()) {
-                        create(familyBody)
+                    if (treeId.isNullOrEmpty()) {
+                        if (userId != null) {
+                            create(
+                                userId = userId.toString(),
+                                familyBody = familyBody
+                            )
+                        } else {
+                            create(
+                                userId = getData("user_id", applicationContext).toString(),
+                                familyBody = familyBody
+                            )
+                        }
                     } else {
-                        update(id = id.toString(), familyBody = familyBody)
+                        if (userId != null) {
+                            update(
+                                userId = userId.toString(),
+                                treeId = treeId.toString(),
+                                familyBody = familyBody
+                            )
+                        } else {
+                            update(
+                                userId = getData("user_id", applicationContext).toString(),
+                                treeId = treeId.toString(),
+                                familyBody = familyBody
+                            )
+                        }
                     }
                 } else {
                     showErrorMessage(
@@ -270,10 +292,13 @@ class AddFamilyTree : AppCompatActivity() {
         }
     }
 
-    private fun create(familyBody: FamilyBody) {
+    private fun create(userId: String, familyBody: FamilyBody) {
         try {
-            Log.e("body", familyBody.toString())
-            val family = RetrofitClient.instanceClient.familyTree(familyBody)
+            Log.e("body", "$userId $familyBody")
+            val family = RetrofitClient.instanceClient.familyTree(
+                id = userId,
+                bodyFamilyTree = familyBody
+            )
             family.enqueue(
                 RetrofitWithBar(this@AddFamilyTree, object : Callback<FamilyDto> {
                     @SuppressLint("SimpleDateFormat")
@@ -365,11 +390,15 @@ class AddFamilyTree : AppCompatActivity() {
         }
     }
 
-    private fun update(id: String, familyBody: FamilyBody) {
+    private fun update(userId: String, treeId: String, familyBody: FamilyBody) {
         try {
-            Log.e("body", "$id $familyBody")
+            Log.e("body", "$userId $treeId $familyBody")
             val family =
-                RetrofitClient.instanceClient.familyTree(id = id, bodyFamilyTree = familyBody)
+                RetrofitClient.instanceClient.familyTree(
+                    userId = userId,
+                    treeId = treeId,
+                    bodyFamilyTree = familyBody
+                )
             family.enqueue(
                 RetrofitWithBar(this@AddFamilyTree, object : Callback<ResDto> {
                     @SuppressLint("SimpleDateFormat")

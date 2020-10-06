@@ -12,8 +12,9 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.swadharmaa.R
-import com.swadharmaa.family.FamilyDto
 import com.swadharmaa.family.FamilyData
+import com.swadharmaa.family.FamilyDto
+import com.swadharmaa.general.getData
 import com.swadharmaa.general.reloadFragment
 import com.swadharmaa.general.sessionExpired
 import com.swadharmaa.general.showErrorMessage
@@ -29,11 +30,13 @@ import retrofit2.Response
 
 class Vazhakkam : Fragment(), IOnBackPressed {
 
-    private var familyDto: Call<FamilyDto>? = null
+    private var family: Call<FamilyDto>? = null
     private val moshi: Moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
     var internetDetector: InternetDetector? = null
+    var userId: String? = null
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -53,16 +56,26 @@ class Vazhakkam : Fragment(), IOnBackPressed {
             layout_refresh.isRefreshing = false
         }
 
-        btn_add.setOnClickListener {
-            startActivity(Intent(requireActivity(), AddVazhakkam::class.java))
-        }
+        userId = this.arguments!!.getString(getString(R.string.userId))
         family()
+
+        btn_add.setOnClickListener {
+            val intent = Intent(requireActivity(), AddVazhakkam::class.java)
+            intent.putExtra(getString(R.string.userId), userId)
+            startActivity(intent)
+        }
     }
 
     private fun family() {
         if (internetDetector?.checkMobileInternetConn(requireContext())!!) {
-            familyDto = RetrofitClient.instanceClient.listOfFamily()
-            familyDto?.enqueue(object : Callback<FamilyDto> {
+            family = if (userId != null) {
+                RetrofitClient.instanceClient.listOfFamily(userId!!)
+            } else {
+                RetrofitClient.instanceClient.listOfFamily(
+                    getData("user_id", requireContext()).toString()
+                )
+            }
+            family?.enqueue(object : Callback<FamilyDto> {
                 @SuppressLint("DefaultLocale", "SetTextI18n")
                 override fun onResponse(
                     call: Call<FamilyDto>,
@@ -87,6 +100,8 @@ class Vazhakkam : Fragment(), IOnBackPressed {
                                         response.body()!!.data?.shraardhaInfo!!.shraddha_vazhakkam?.krusaram.toString()
                                     txt_pundra_dharanam.text =
                                         response.body()!!.data?.shraardhaInfo!!.shraddha_vazhakkam?.pundraDharanam.toString()
+                                    txt_other.text =
+                                        response.body()!!.data?.shraardhaInfo!!.shraddha_vazhakkam?.other.toString()
 
                                     btn_edit.setOnClickListener {
                                         val jsonAdapter: JsonAdapter<FamilyData> =
@@ -95,6 +110,7 @@ class Vazhakkam : Fragment(), IOnBackPressed {
                                         val intent =
                                             Intent(requireActivity(), AddVazhakkam::class.java)
                                         intent.putExtra(getString(R.string.data), json)
+                                        intent.putExtra(getString(R.string.userId), userId)
                                         startActivity(intent)
                                     }
                                 }
@@ -183,8 +199,8 @@ class Vazhakkam : Fragment(), IOnBackPressed {
 
     override fun onStop() {
         super.onStop()
-        if (familyDto != null) {
-            familyDto?.cancel()
+        if (family != null) {
+            family?.cancel()
         }
     }
 

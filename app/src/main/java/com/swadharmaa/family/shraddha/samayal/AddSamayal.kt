@@ -22,8 +22,9 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.swadharmaa.R
 import com.swadharmaa.book.StringAdapter
-import com.swadharmaa.family.FamilyDto
 import com.swadharmaa.family.FamilyData
+import com.swadharmaa.family.FamilyDto
+import com.swadharmaa.general.getData
 import com.swadharmaa.general.sessionExpired
 import com.swadharmaa.general.showErrorMessage
 import com.swadharmaa.general.showMessage
@@ -51,6 +52,8 @@ class AddSamayal : AppCompatActivity() {
         .add(KotlinJsonAdapterFactory())
         .build()
     var internet: InternetDetector? = null
+    private var family: Call<FamilyDto>? = null
+    var userId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,6 +66,7 @@ class AddSamayal : AppCompatActivity() {
             onBackPressed()
         }
 
+        userId = intent.getStringExtra(getString(R.string.userId))
         try {
             val data = intent.getStringExtra(getString(R.string.data))
             if (data != null) {
@@ -244,7 +248,7 @@ class AddSamayal : AppCompatActivity() {
             val spinnerDialog = SpinnerDialog(
                 this@AddSamayal,
                 thyirPachchadi,
-                "Select Thyir pachchadi.",
+                "Select thayir pachchadi.",
                 R.style.DialogAnimations_SmileWindow, // For slide animation
                 "Cancel"
             )
@@ -260,13 +264,13 @@ class AddSamayal : AppCompatActivity() {
                     val edtName: TextInputEditText = dialog.findViewById(R.id.edt_name)
                     val btnCreate: MaterialButton = dialog.findViewById(R.id.btn_create)
                     txtTips.visibility = View.GONE
-                    layName.hint = "Thyir pachchadi"
+                    layName.hint = "Thayir pachchadi"
                     btnCreate.text = getString(R.string.add)
                     btnCreate.setOnClickListener {
                         try {
                             layName.error = null
                             if (edtName.length() < 2) {
-                                layName.error = "Thyir pachchadi's minimum character is 2."
+                                layName.error = "Thayir pachchadi's minimum character is 2."
                             } else {
                                 edt_thyir_pachchadi.text = edtName.text
                                 edtName.let { v ->
@@ -434,7 +438,7 @@ class AddSamayal : AppCompatActivity() {
             val spinnerDialog = SpinnerDialog(
                 this@AddSamayal,
                 puliKuttu,
-                "Select Puli kuttu.",
+                "Select pulikkoottu.",
                 R.style.DialogAnimations_SmileWindow, // For slide animation
                 "Cancel"
             )
@@ -450,13 +454,13 @@ class AddSamayal : AppCompatActivity() {
                     val edtName: TextInputEditText = dialog.findViewById(R.id.edt_name)
                     val btnCreate: MaterialButton = dialog.findViewById(R.id.btn_create)
                     txtTips.visibility = View.GONE
-                    layName.hint = "Puli kuttu"
+                    layName.hint = "Pulikkoottu"
                     btnCreate.text = getString(R.string.add)
                     btnCreate.setOnClickListener {
                         try {
                             layName.error = null
                             if (edtName.length() < 2) {
-                                layName.error = "Puli kuttu's minimum character is 2."
+                                layName.error = "Pulikkoottu's minimum character is 2."
                             } else {
                                 edt_puli_kuttu.text = edtName.text
                                 edtName.let { v ->
@@ -602,7 +606,7 @@ class AddSamayal : AppCompatActivity() {
             val spinnerDialog = SpinnerDialog(
                 this@AddSamayal,
                 poruchchakuttu,
-                "Select Poruchchakuttu.",
+                "Select porittha koottu.",
                 R.style.DialogAnimations_SmileWindow, // For slide animation
                 "Cancel"
             )
@@ -617,13 +621,13 @@ class AddSamayal : AppCompatActivity() {
                     val edtName: TextInputEditText = dialog.findViewById(R.id.edt_name)
                     val btnCreate: MaterialButton = dialog.findViewById(R.id.btn_create)
                     txtTips.visibility = View.GONE
-                    layName.hint = "Poruchchakuttu"
+                    layName.hint = "Porittha koottu"
                     btnCreate.text = getString(R.string.add)
                     btnCreate.setOnClickListener {
                         try {
                             layName.error = null
                             if (edtName.length() < 2) {
-                                layName.error = "Poruchchakuttu's minimum character is 2."
+                                layName.error = "Porittha koottu's minimum character is 2."
                             } else {
                                 edt_poruchchakuttu.text = edtName.text
                                 edtName.let { v ->
@@ -736,7 +740,7 @@ class AddSamayal : AppCompatActivity() {
             val spinnerDialog = SpinnerDialog(
                 this@AddSamayal,
                 thugayal,
-                "Select Thugayal.",
+                "Select thuvaiyal.",
                 R.style.DialogAnimations_SmileWindow, // For slide animation
                 "Cancel"
             )
@@ -752,13 +756,13 @@ class AddSamayal : AppCompatActivity() {
                     val edtName: TextInputEditText = dialog.findViewById(R.id.edt_name)
                     val btnCreate: MaterialButton = dialog.findViewById(R.id.btn_create)
                     txtTips.visibility = View.GONE
-                    layName.hint = "Thugayal"
+                    layName.hint = "Thuvaiyal"
                     btnCreate.text = getString(R.string.add)
                     btnCreate.setOnClickListener {
                         try {
                             layName.error = null
                             if (edtName.length() < 2) {
-                                layName.error = "Thugayal's minimum character is 2."
+                                layName.error = "Thuvaiyal's minimum character is 2."
                             } else {
                                 thugayalList.add(edtName.text.toString())
                                 view_thugayal?.apply {
@@ -815,7 +819,7 @@ class AddSamayal : AppCompatActivity() {
             val spinnerDialog = SpinnerDialog(
                 this@AddSamayal,
                 uruga,
-                "Select Uruga.",
+                "Select Oorukai.",
                 R.style.DialogAnimations_SmileWindow, // For slide animation
                 "Cancel"
             )
@@ -831,13 +835,13 @@ class AddSamayal : AppCompatActivity() {
                     val edtName: TextInputEditText = dialog.findViewById(R.id.edt_name)
                     val btnCreate: MaterialButton = dialog.findViewById(R.id.btn_create)
                     txtTips.visibility = View.GONE
-                    layName.hint = "Uruga"
+                    layName.hint = "Oorukai"
                     btnCreate.text = getString(R.string.add)
                     btnCreate.setOnClickListener {
                         try {
                             layName.error = null
                             if (edtName.length() < 2) {
-                                layName.error = "Uruga's minimum character is 2."
+                                layName.error = "Oorukai's minimum character is 2."
                             } else {
                                 urugaList.add(edtName.text.toString())
                                 view_uruga?.apply {
@@ -1029,104 +1033,11 @@ class AddSamayal : AppCompatActivity() {
     private fun update() {
 
         lay_payasam.error = null
-//        lay_thyir_pachchadi.error = null
-//        lay_sweet_pachchadi.error = null
-//        lay_puli_kuttu.error = null
-//        lay_morkuzhambu.error = null
-//        lay_rasam.error = null
-//        lay_poruchchakuttu.error = null
-//        lay_samayal_type.error = null
-//        lay_other.error = null
-
         when {
-
             edt_payasam.length() < 1 -> {
                 lay_payasam.error = "Payasam is required."
             }
-//            edt_thyir_pachchadi.length() < 1 -> {
-//                lay_thyir_pachchadi.error = "Thyir pachchadi is required."
-//            }
-//            edt_sweet_pachchadi.length() < 1 -> {
-//                lay_sweet_pachchadi.error = "Sweet pachchadi is required."
-//            }
-//            kariList.size == 0 -> {
-//                showErrorMessage(
-//                    lay_root,
-//                    "Kari's are required!, Please add a Kari!"
-//                )
-//            }
-//            edt_puli_kuttu.length() < 1 -> {
-//                lay_puli_kuttu.error = "Puli kuttu is required."
-//            }
-//            edt_morkuzhambu.length() < 1 -> {
-//                lay_morkuzhambu.error = "morkuzhambu is required."
-//            }
-//            edt_rasam.length() < 1 -> {
-//                lay_rasam.error = "Rasam is required."
-//            }
-//            edt_poruchchakuttu.length() < 1 -> {
-//                lay_poruchchakuttu.error = "Poruchchakuttu is required."
-//            }
-//
-//            bhakshanamList.size == 0 -> {
-//                showErrorMessage(
-//                    lay_root,
-//                    "Bhakshanam's are required!, Please add a Bhakshanam!"
-//                )
-//            }
-//
-//            thugayalList.size == 0 -> {
-//                showErrorMessage(
-//                    lay_root,
-//                    "Thugayal's are required!, Please add a Thugayal!"
-//                )
-//            }
-//
-//            urugaList.size == 0 -> {
-//                showErrorMessage(
-//                    lay_root,
-//                    "Uruga's are required!, Please add a Uruga!"
-//                )
-//            }
-//
-//            pazhangalList.size == 0 -> {
-//                showErrorMessage(
-//                    lay_root,
-//                    "Pazhangal's are required!, Please add a Pazhangal!"
-//                )
-//            }
-//            edt_samayal_type.length() < 1 -> {
-//                lay_samayal_type.error = "AddSamayal type is required."
-//            }
-//            edt_other.length() < 3 -> {
-//                lay_other.error = "Other's minimum character is 3."
-//            }
             else -> {
-//                val map: HashMap<String, HashMap<String, HashMap<String, Any>>> = HashMap()
-//                val mapSamayal: HashMap<String, HashMap<String, Any>> = HashMap()
-//                val mapData: HashMap<String, Any> = HashMap()
-//                mapData["payasam"] = edt_payasam.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["thyirPachchadi"] =
-//                    edt_thyir_pachchadi.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["sweetPachchadi"] =
-//                    edt_sweet_pachchadi.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["kari"] = kariList
-//                mapData["puliKuttu"] =
-//                    edt_puli_kuttu.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["morkuzhambu"] =
-//                    edt_morkuzhambu.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["rasam"] = edt_rasam.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["poruchchakuttu"] =
-//                    edt_poruchchakuttu.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["bhakshanam"] = bhakshanamList
-//                mapData["thugayal"] = thugayalList
-//                mapData["uruga"] = urugaList
-//                mapData["pazhanga"] = pazhangalList
-//                mapData["samayalType"] =
-//                    edt_samayal_type.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["other"] = edt_other.text.toString().toLowerCase(Locale.getDefault())
-//                mapSamayal["samayal"] = mapData
-//                map["shraardhaInfo"] = mapSamayal
                 val samayal = com.swadharmaa.family.Samayal(
                     payasam = edt_payasam.text.toString().toLowerCase(Locale.getDefault()),
                     thyirPachchadi = edt_thyir_pachchadi.text.toString()
@@ -1155,8 +1066,18 @@ class AddSamayal : AppCompatActivity() {
         if (internet!!.checkMobileInternetConn(this@AddSamayal)) {
             try {
                 Log.e("body", data.toString())
-                val samayal = RetrofitClient.instanceClient.samayal(data)
-                samayal.enqueue(
+                family = if (userId != null) {
+                    RetrofitClient.instanceClient.samayal(
+                        id = userId!!,
+                        samayal = data
+                    )
+                } else {
+                    RetrofitClient.instanceClient.samayal(
+                        id = getData("user_id", applicationContext).toString(),
+                        samayal = data
+                    )
+                }
+                family!!.enqueue(
                     RetrofitWithBar(this@AddSamayal, object : Callback<FamilyDto> {
                         @SuppressLint("SimpleDateFormat")
                         @RequiresApi(Build.VERSION_CODES.O)

@@ -36,15 +36,6 @@
         <item name="hintTextColor">@color/theme_light_grey</item>
     </style>
 
-    <style name="ProfileTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
-        <item name="colorPrimary">@color/colorAccent</item>
-        <item name="colorPrimaryDark">@color/colorAccent</item>
-        <item name="colorAccent">@color/colorAccent</item>
-
-        <item name="windowNoTitle">true</item>
-        <item name="windowActionBar">true</item>
-    </style>
-
     <style name="CustomBottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
         <item name="bottomSheetStyle">@style/CustomBottomSheetStyle</item>
     </style>

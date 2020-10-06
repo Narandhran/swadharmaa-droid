@@ -3,5 +3,9 @@ package com.swadharmaa.general
 enum class Enums(var value: String) {
     Dp("dp/"),
     Category("category-thumb/"),
-    Book("book/")
+    Book("book/"),
+    Banner("banner/"),
+    Role("role"),
+    Admin("ADMIN"),
+    User("USER"),
 }

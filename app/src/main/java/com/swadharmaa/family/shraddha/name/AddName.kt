@@ -12,8 +12,9 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.swadharmaa.R
-import com.swadharmaa.family.FamilyDto
 import com.swadharmaa.family.FamilyData
+import com.swadharmaa.family.FamilyDto
+import com.swadharmaa.general.getData
 import com.swadharmaa.general.sessionExpired
 import com.swadharmaa.general.showErrorMessage
 import com.swadharmaa.general.showMessage
@@ -35,6 +36,8 @@ class AddName : AppCompatActivity() {
         .add(KotlinJsonAdapterFactory())
         .build()
     var internet: InternetDetector? = null
+    private var family: Call<FamilyDto>? = null
+    var userId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,7 +49,7 @@ class AddName : AppCompatActivity() {
         im_back.setOnClickListener {
             onBackPressed()
         }
-
+        userId = intent.getStringExtra(getString(R.string.userId))
         try {
             val data = intent.getStringExtra(getString(R.string.data))
             if (data != null) {
@@ -102,87 +105,12 @@ class AddName : AppCompatActivity() {
     }
 
     private fun update() {
-
         lay_pithru.error = null
-//        lay_pithamaha.error = null
-//        lay_prapithamaha.error = null
-//        lay_mathru.error = null
-//        lay_pithamahi.error = null
-//        lay_prapithamahi.error = null
-//        lay_mathamaha.error = null
-//        lay_mathru_pithamaha.error = null
-//        lay_mathru_prapithamaha.error = null
-//        lay_mathamahi.error = null
-//        lay_mathru_pithamahi.error = null
-//        lay_mathru_prapitamahi.error = null
-
         when {
-
             edt_pithru.length() < 3 -> {
                 lay_pithru.error = "Pithru's minimum character is 3."
             }
-//            edt_pithamaha.length() < 3 -> {
-//                lay_pithamaha.error = "Pithamaha's minimum character is 3."
-//            }
-//            edt_prapithamaha.length() < 3 -> {
-//                lay_prapithamaha.error = "Prapithamah's minimum character is 3."
-//            }
-//            edt_mathru.length() < 3 -> {
-//                lay_mathru.error = "Mathru's minimum character is 3."
-//            }
-//            edt_pithamahi.length() < 3 -> {
-//                lay_pithamahi.error = "Pitamahi's minimum character is 3."
-//            }
-//            edt_prapithamahi.length() < 3 -> {
-//                lay_prapithamahi.error = "Prapitamahi's minimum character is 3."
-//            }
-//            edt_mathamaha.length() < 3 -> {
-//                lay_mathamaha.error = "Mathamaha's minimum character is 3."
-//            }
-//            edt_mathru_pithamaha.length() < 3 -> {
-//                lay_mathru_pithamaha.error = "Mathru pithamaha's minimum character is 3."
-//            }
-//            edt_mathru_prapithamaha.length() < 3 -> {
-//                lay_mathru_prapithamaha.error = "Mathru prapithamaha's minimum character is 3."
-//            }
-//            edt_mathamahi.length() < 3 -> {
-//                lay_mathamahi.error = "Mathamahi's minimum character is 3."
-//            }
-//            edt_mathru_pithamahi.length() < 3 -> {
-//                lay_mathru_pithamahi.error = "Mathru pithamahi's minimum character is 3."
-//            }
-//            edt_mathru_prapitamahi.length() < 3 -> {
-//                lay_mathru_prapitamahi.error = "Mathru prapitamahi's minimum character is 3."
-//            }
             else -> {
-//                val map: HashMap<String, HashMap<String, HashMap<String, Any>>> = HashMap()
-//                val mapName: HashMap<String, HashMap<String, Any>> = HashMap()
-//                val mapData: HashMap<String, Any> = HashMap()
-//                mapData["pithru"] = edt_pithru.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["pithamaha"] =
-//                    edt_pithamaha.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["prapithamaha"] =
-//                    edt_prapithamaha.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["mathru"] = edt_mathru.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["pithamahi"] =
-//                    edt_pithamahi.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["prapithamahi"] =
-//                    edt_prapithamahi.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["mathamaha"] =
-//                    edt_mathamaha.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["mathruPithamaha"] =
-//                    edt_mathru_pithamaha.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["mathruPrapithamaha"] =
-//                    edt_mathru_prapithamaha.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["mathamahi"] =
-//                    edt_mathamahi.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["mathruPithamahi"] =
-//                    edt_mathru_pithamahi.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["mathruPrapitamahi"] =
-//                    edt_mathru_prapitamahi.text.toString().toLowerCase(Locale.getDefault())
-//                mapName["name"] = mapData
-//                map["shraardhaInfo"] = mapName
-
                 val name = com.swadharmaa.family.Name(
                     pithru = edt_pithru.text.toString().toLowerCase(Locale.getDefault()),
                     pithamaha = edt_pithamaha.text.toString().toLowerCase(Locale.getDefault()),
@@ -212,8 +140,18 @@ class AddName : AppCompatActivity() {
         if (internet!!.checkMobileInternetConn(this@AddName)) {
             try {
                 Log.e("body", data.toString())
-                val name = RetrofitClient.instanceClient.name(data)
-                name.enqueue(
+                family = if (userId != null) {
+                    RetrofitClient.instanceClient.name(
+                        id = userId!!,
+                        name = data
+                    )
+                } else {
+                    RetrofitClient.instanceClient.name(
+                        id = getData("user_id", applicationContext).toString(),
+                        name = data
+                    )
+                }
+                family!!.enqueue(
                     RetrofitWithBar(this@AddName, object : Callback<FamilyDto> {
                         @SuppressLint("SimpleDateFormat")
                         @RequiresApi(Build.VERSION_CODES.O)

@@ -12,26 +12,12 @@ import com.squareup.picasso.Picasso
 import com.swadharmaa.R
 
 
-class ViewPagerAdapter(
-    private val flag: Boolean,
-    private val context: Context,
-    private val uri: MutableList<Int>
-) :
+class ViewPagerAdapter(private val context: Context, private val uri: MutableList<String>) :
     PagerAdapter() {
     private var layoutInflater: LayoutInflater? = null
-    var images =
-        arrayOf(
-            R.drawable.img_placeholder,
-            R.drawable.img_placeholder,
-            R.drawable.img_placeholder
-        )
 
     override fun getCount(): Int {
-        return if (uri.size == 0) {
-            images.size
-        } else {
-            uri.size
-        }
+        return uri.size
     }
 
     override fun isViewFromObject(view: View, `object`: Any): Boolean {
@@ -43,20 +29,12 @@ class ViewPagerAdapter(
         layoutInflater =
             context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater?
         val view: View = layoutInflater?.inflate(R.layout.custom_image_banner, null)!!
-        val imageView: ImageView = view.findViewById(R.id.img_category) as ImageView
-
-        if (uri.size == 0) {
-            Picasso.get().load(images[position])
-                .error(R.drawable.img_placeholder)
-                .placeholder(R.drawable.img_placeholder)
-                .into(imageView)
-        } else {
-//                val file = File(uri[position])
-            Picasso.get().load(uri[position])
-                .error(R.drawable.img_placeholder)
-                .placeholder(R.drawable.img_placeholder)
-                .into(imageView)
-        }
+        val imageView: ImageView = view.findViewById(R.id.img_banner) as ImageView
+        Picasso.get().load(getData("rootPath", context) + Enums.Banner.value + uri[position])
+            .error(R.drawable.im_banner_holder)
+            .placeholder(R.drawable.im_banner_holder)
+            .fit()
+            .into(imageView)
         val vp = container as ViewPager
         vp.addView(view)
         return view

@@ -2,7 +2,6 @@ package com.swadharmaa.family.familytree
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -10,17 +9,18 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textview.MaterialTextView
-import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.swadharmaa.R
 import com.swadharmaa.family.FamilyTreeData
+import com.swadharmaa.interfaces.OnFamilyClickListener
 import org.apache.commons.lang3.StringUtils
 
 
 class FamilyTreeAdapter(
     private var dataList: List<FamilyTreeData>,
-    private val activity: Activity
+    private val activity: Activity,
+    private val listener: OnFamilyClickListener
 
 ) :
     RecyclerView.Adapter<FamilyTreeAdapter.Holder>() {
@@ -48,16 +48,8 @@ class FamilyTreeAdapter(
             holder.txtPadham.text = StringUtils.capitalize(data.padham)
             holder.txtCity.text = StringUtils.capitalize(data.city)
             holder.txtMobile.text = StringUtils.capitalize(data.mobileNumber)
+            holder.bind(data, listener)
 
-            holder.btnEdit.setOnClickListener {
-                val jsonAdapter: JsonAdapter<FamilyTreeData> = moshi.adapter(
-                    FamilyTreeData::class.java
-                )
-                val json = jsonAdapter.toJson(data)
-                val intent = Intent(activity, AddFamilyTree::class.java)
-                intent.putExtra(activity.getString(R.string.data), json)
-                activity.startActivity(intent)
-            }
         } catch (e: Exception) {
             Log.e("Exception", e.toString())
             e.printStackTrace()
@@ -86,5 +78,8 @@ class FamilyTreeAdapter(
         var txtCity: MaterialTextView = view.findViewById(R.id.txt_city)
         var txtMobile: MaterialTextView = view.findViewById(R.id.txt_mobile)
         var btnEdit: MaterialButton = view.findViewById(R.id.btn_edit)
+        fun bind(item: FamilyTreeData, listener: OnFamilyClickListener) {
+            btnEdit.setOnClickListener { listener.onItemClick(item) }
+        }
     }
 }

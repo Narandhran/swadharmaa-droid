@@ -17,8 +17,8 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.swadharmaa.R
 import com.swadharmaa.general.Enums
+import com.swadharmaa.general.coordinatorMessage
 import com.swadharmaa.general.getData
-import com.swadharmaa.general.showMessage
 import kotlinx.android.synthetic.main.act_reader.*
 import kotlinx.android.synthetic.main.toolbar.*
 import java.io.InputStream
@@ -61,7 +61,7 @@ class Reader : AppCompatActivity(), OnPageChangeListener, OnLoadCompleteListener
             }
         } catch (e: Exception) {
             Log.e("Exception", e.toString())
-            showMessage(lay_root, getString(R.string.unable_to_fetch))
+            coordinatorMessage(lay_root, getString(R.string.unable_to_fetch))
         }
     }
 

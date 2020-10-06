@@ -1,11 +1,13 @@
 package com.swadharmaa.book
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import androidx.annotation.RequiresApi
@@ -73,6 +75,13 @@ class Book : AppCompatActivity() {
             Log.e("Exception", e.toString())
             showMessage(lay_root, getString(R.string.unable_to_fetch))
         }
+
+        val role = getData(Enums.Role.value, applicationContext)
+        if (role == Enums.Admin.value) {
+            img_edit.visibility = View.VISIBLE
+        } else {
+            img_edit.visibility = View.GONE
+        }
     }
 
     private fun books(book: SingleBook) {
@@ -91,6 +100,7 @@ class Book : AppCompatActivity() {
                             200 -> {
                                 txt_title.text = response.body()!!.data.name
                                 txt_author.text = response.body()!!.data.author
+                                txt_description.text = response.body()!!.data.description
                                 Picasso.get()
                                     .load(
                                         getData(
@@ -98,8 +108,9 @@ class Book : AppCompatActivity() {
                                             this@Book
                                         ) + Enums.Book.value + response.body()!!.data.thumbnail
                                     )
-                                    .error(R.drawable.img_placeholder)
-                                    .placeholder(R.drawable.img_placeholder)
+                                    .error(R.drawable.img_place_holder)
+                                    .placeholder(R.drawable.img_place_holder)
+                                    .fit()
                                     .into(img_book)
 
                                 val isBookmark = response.body()!!.data.isBookmark
@@ -146,13 +157,31 @@ class Book : AppCompatActivity() {
                                     }
                                 }
 
-                                btn_preview.setOnClickListener {
+                                btn_read.setOnClickListener {
                                     val intent = Intent(this@Book, Reader::class.java)
                                     intent.putExtra(
                                         this@Book.getString(R.string.data),
                                         response.body()!!.data.content
                                     )
                                     startActivity(intent)
+                                }
+
+                                img_edit.setOnClickListener {
+                                    try {
+                                        val jsonAdapter: JsonAdapter<BookData> =
+                                            moshi.adapter(BookData::class.java)
+                                        val json: String =
+                                            jsonAdapter.toJson(response.body()!!.data)
+                                        val intent = Intent(this@Book, AddBook::class.java)
+                                        intent.putExtra("data", json)
+                                        startActivityForResult(intent, 1)
+                                        overridePendingTransition(
+                                            R.anim.fade_in,
+                                            R.anim.fade_out
+                                        )
+                                    } catch (e: Exception) {
+                                        Log.e("Exception", e.toString())
+                                    }
                                 }
                             }
                             else -> {
@@ -408,6 +437,45 @@ class Book : AppCompatActivity() {
                 lay_root,
                 getString(R.string.msg_no_internet)
             )
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 1) {
+            if (resultCode == Activity.RESULT_OK) {
+                if (data != null) {
+                    try {
+                        val id = data.getStringExtra(getString(R.string.data))
+                        if (id != null) {
+                            val book = SingleBook(
+                                libraryId = id,
+                                userId = getData("user_id", applicationContext).toString()
+                            )
+                            books(book)
+                        }
+                    } catch (e: Exception) {
+                        Log.e("Exception", e.toString())
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        try {
+            val data = intent.getStringExtra("data")
+            if (data != null) {
+                val book = SingleBook(
+                    libraryId = data,
+                    userId = getData("user_id", applicationContext).toString()
+                )
+                books(book)
+            }
+        } catch (e: Exception) {
+            Log.e("Exception", e.toString())
+            showMessage(lay_root, getString(R.string.unable_to_fetch))
         }
     }
 }

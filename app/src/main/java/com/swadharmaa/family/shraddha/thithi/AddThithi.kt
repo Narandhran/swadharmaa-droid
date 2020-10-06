@@ -3,25 +3,29 @@ package com.swadharmaa.family.shraddha.thithi
 import `in`.galaxyofandroid.spinerdialog.SpinnerDialog
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
+import android.app.Dialog
 import android.app.TimePickerDialog
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
 import android.util.Log
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
+import com.google.android.material.textview.MaterialTextView
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.swadharmaa.R
 import com.swadharmaa.family.FamilyDto
 import com.swadharmaa.family.ThithiData
-import com.swadharmaa.general.inputDateFormat
-import com.swadharmaa.general.sessionExpired
-import com.swadharmaa.general.showErrorMessage
-import com.swadharmaa.general.showMessage
+import com.swadharmaa.general.*
 import com.swadharmaa.server.InternetDetector
 import com.swadharmaa.server.RetrofitClient
 import com.swadharmaa.server.RetrofitWithBar
@@ -47,7 +51,8 @@ class AddThithi : AppCompatActivity() {
         .add(KotlinJsonAdapterFactory())
         .build()
     var internet: InternetDetector? = null
-    var id: String? = null
+    var userId: String? = null
+    var thithiId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +65,7 @@ class AddThithi : AppCompatActivity() {
             onBackPressed()
         }
 
+        userId = intent.getStringExtra(getString(R.string.userId))
         try {
             val data = intent.getStringExtra(getString(R.string.data))
             if (data != null) {
@@ -68,7 +74,7 @@ class AddThithi : AppCompatActivity() {
                 val thithiData: com.swadharmaa.family.Thithi? =
                     jsonAdapter.fromJson(data.toString())
                 println(thithiData)
-                id = thithiData?._id.toString()
+                thithiId = thithiData?._id.toString()
                 edt_relationship.setText(thithiData?.relationship)
                 edt_name.setText(thithiData?.name)
                 edt_masam_sauramanam.setText(thithiData?.masamSauramanam)
@@ -95,7 +101,43 @@ class AddThithi : AppCompatActivity() {
             spinnerDialog.setCancellable(true) // for cancellable
             spinnerDialog.setShowKeyboard(false)// for open keyboard by default
             spinnerDialog.bindOnSpinerListener { item, position ->
-                edt_relationship.setText(item)
+                if (item == getString(R.string.other)) {
+                    val dialog = Dialog(this@AddThithi, R.style.DialogTheme)
+                    dialog.setContentView(R.layout.dialog_add_genre)
+                    val txtTips: MaterialTextView = dialog.findViewById(R.id.txt_tips)
+                    val layName: TextInputLayout = dialog.findViewById(R.id.lay_name)
+                    val edtName: TextInputEditText = dialog.findViewById(R.id.edt_name)
+                    val btnCreate: MaterialButton = dialog.findViewById(R.id.btn_create)
+                    txtTips.visibility = View.GONE
+                    layName.hint = "Relationship"
+                    btnCreate.text = getString(R.string.add)
+                    btnCreate.setOnClickListener {
+                        try {
+                            layName.error = null
+                            if (edtName.length() < 2) {
+                                layName.error = "Relationship's minimum character is 2."
+                            } else {
+                                edt_relationship.text = edtName.text
+                                edtName.let { v ->
+                                    val imm =
+                                        getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                                    imm?.hideSoftInputFromWindow(v.windowToken, 0)
+                                }
+                                Handler().postDelayed({
+                                    edtName.setText("")
+                                }, 200)
+                                dialog.cancel()
+                            }
+
+                        } catch (e: Exception) {
+                            Log.d("ParseException", e.toString())
+                            e.printStackTrace()
+                        }
+                    }
+                    dialog.show()
+                } else {
+                    edt_relationship.setText(item)
+                }
             }
             spinnerDialog.showSpinerDialog()
         }
@@ -195,10 +237,8 @@ class AddThithi : AppCompatActivity() {
 
                 }, mYear, mMonth, mDay
             )
-            val min = System.currentTimeMillis() - 1000
-            val max = System.currentTimeMillis() + 15552000000
-            datePickerDialog.datePicker.minDate = min
-            datePickerDialog.datePicker.maxDate = max
+//            val min = System.currentTimeMillis() - 1000
+//            datePickerDialog.datePicker.minDate = min
             datePickerDialog.setTitle("")
             datePickerDialog.show()
         }
@@ -227,58 +267,12 @@ class AddThithi : AppCompatActivity() {
     }
 
     private fun thithi() {
-//        lay_relationship.error = null
         lay_name.error = null
-//        lay_masam_sauramanam.error = null
-//        lay_masam_chandramanam.error = null
-//        lay_paksham.error = null
-//        lay_thithi.error = null
-//        lay_date.error = null
-//        lay_time.error = null
-
         when {
-//            edt_relationship.length() < 3 -> {
-//                lay_relationship.error = "Relationship's minimum character is 3."
-//            }
             edt_name.length() < 3 -> {
                 lay_name.error = "AddName's minimum character is 3."
             }
-//            edt_masam_sauramanam.length() < 1 -> {
-//                lay_masam_sauramanam.error = "Masam (sauramanam) is required."
-//            }
-//            edt_masam_chandramanam.length() < 1 -> {
-//                lay_masam_chandramanam.error = "Masam (chandramanam) is required."
-//            }
-//            edt_paksham.length() < 1 -> {
-//                lay_paksham.error = "Paksham is required."
-//            }
-//            edt_thithi.length() < 1 -> {
-//                lay_thithi.error = "AddThithi is required."
-//            }
-//            edt_date.length() < 1 -> {
-//                lay_date.error = "Date is required."
-//            }
-//            edt_time.length() < 1 -> {
-//                lay_time.error = "Time is required."
-//            }
             else -> {
-//                val map: HashMap<String, HashMap<String, HashMap<String, Any>>> = HashMap()
-//                val mapThithi: HashMap<String, HashMap<String, Any>> = HashMap()
-//                val mapData: HashMap<String, Any> = HashMap()
-//                mapData["relationship"] =
-//                    edt_relationship.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["name"] = edt_name.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["masamSauramanam"] =
-//                    edt_masam_sauramanam.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["masamChandramanam"] =
-//                    edt_masam_chandramanam.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["paksham"] = edt_paksham.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["thithi"] = edt_thithi.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["date"] = edt_date.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["time"] = edt_time.text.toString().toLowerCase(Locale.getDefault())
-//                mapThithi["thithi"] = mapData
-//                map["shraardhaInfo"] = mapThithi
-
                 val thithiData = ThithiData(
                     relationship = edt_relationship.text.toString()
                         .toLowerCase(Locale.getDefault()),
@@ -293,10 +287,33 @@ class AddThithi : AppCompatActivity() {
                     time = edt_time.text.toString().toLowerCase(Locale.getDefault())
                 )
                 if (internet!!.checkMobileInternetConn(this@AddThithi)) {
-                    if (id.isNullOrEmpty()) {
-                        create(thithiData)
+                    if (thithiId.isNullOrEmpty()) {
+                        if (userId != null) {
+                            create(
+                                userId = userId!!,
+                                data = thithiData
+                            )
+                        } else {
+                            create(
+                                userId = getData("user_id", applicationContext).toString(),
+                                data = thithiData
+                            )
+                        }
+
                     } else {
-                        update(id = id.toString(), data = thithiData)
+                        if (userId != null) {
+                            update(
+                                userId = userId!!,
+                                thithiId = thithiId.toString(),
+                                data = thithiData
+                            )
+                        } else {
+                            update(
+                                userId = getData("user_id", applicationContext).toString(),
+                                thithiId = thithiId.toString(),
+                                data = thithiData
+                            )
+                        }
                     }
                 } else {
                     showErrorMessage(
@@ -308,11 +325,12 @@ class AddThithi : AppCompatActivity() {
         }
     }
 
-    private fun create(data: ThithiData) {
+    private fun create(userId: String, data: ThithiData) {
         if (internet!!.checkMobileInternetConn(this@AddThithi)) {
             try {
                 Log.e("body", data.toString())
-                val familyCreate = RetrofitClient.instanceClient.thithi(data)
+                val familyCreate =
+                    RetrofitClient.instanceClient.thithi(id = userId, thithiData = data)
                 familyCreate.enqueue(
                     RetrofitWithBar(this@AddThithi, object : Callback<FamilyDto> {
                         @SuppressLint("SimpleDateFormat")
@@ -410,11 +428,15 @@ class AddThithi : AppCompatActivity() {
         }
     }
 
-    private fun update(id: String, data: ThithiData) {
+    private fun update(userId: String, thithiId: String, data: ThithiData) {
         if (internet!!.checkMobileInternetConn(this@AddThithi)) {
             try {
-                Log.e("body", "$id $data")
-                val familyCreate = RetrofitClient.instanceClient.thithi(id = id, thithiData = data)
+                Log.e("body", "$thithiId $data")
+                val familyCreate = RetrofitClient.instanceClient.thithi(
+                    userId = userId,
+                    thithiId = thithiId,
+                    thithiData = data
+                )
                 familyCreate.enqueue(
                     RetrofitWithBar(this@AddThithi, object : Callback<ResDto> {
                         @SuppressLint("SimpleDateFormat")

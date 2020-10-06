@@ -22,9 +22,10 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.swadharmaa.R
 import com.swadharmaa.book.StringAdapter
-import com.swadharmaa.family.FamilyInfo
-import com.swadharmaa.family.FamilyDto
 import com.swadharmaa.family.FamilyData
+import com.swadharmaa.family.FamilyDto
+import com.swadharmaa.family.FamilyInfo
+import com.swadharmaa.general.getData
 import com.swadharmaa.general.sessionExpired
 import com.swadharmaa.general.showErrorMessage
 import com.swadharmaa.general.showMessage
@@ -41,11 +42,13 @@ import java.util.*
 
 class AddFamilyInfo : AppCompatActivity() {
 
+    private var family: Call<FamilyDto>? = null
     var poojaList: MutableList<Any> = arrayListOf()
     private val moshi: Moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
         .build()
     var internet: InternetDetector? = null
+    var userId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,7 +60,7 @@ class AddFamilyInfo : AppCompatActivity() {
         im_back.setOnClickListener {
             onBackPressed()
         }
-
+        userId = intent.getStringExtra(getString(R.string.userId))
         try {
             val data = intent.getStringExtra(getString(R.string.data))
             if (data != null) {
@@ -860,113 +863,12 @@ class AddFamilyInfo : AppCompatActivity() {
 
     private fun update() {
         lay_nativity.error = null
-//        lay_kulatheivam.error = null
-//        lay_tongue.error = null
-//        lay_sampradhayam.error = null
-//        lay_subsect.error = null
-//        lay_telugu_subsect.error = null
-//        lay_vaishnavam.error = null
-//        lay_vaishnavam_telugu.error = null
-//        lay_madhava.error = null
-//        lay_gothram.error = null
-//        lay_rushi.error = null
-//        lay_pravara.error = null
-//        lay_soothram.error = null
-//        lay_vedham.error = null
-//        lay_pondugal_name.error = null
-//        lay_panchangam.error = null
-//        lay_thilakam.error = null
 
         when {
             edt_nativity.length() < 3 -> {
                 lay_nativity.error = "Nativity's minimum character is 3."
             }
-//            edt_kulatheivam.length() < 3 -> {
-//                lay_kulatheivam.error = "Kulatheivam's minimum character is 3."
-//            }
-//            edt_tongue.length() < 1 -> {
-//                lay_tongue.error = "Mother tongue is required."
-//            }
-//            edt_sampradhayam.length() < 1 -> {
-//                lay_sampradhayam.error = "Sampradhayam is required."
-//            }
-//            edt_subsect.length() < 1 -> {
-//                lay_subsect.error = "Subsect is required."
-//            }
-//            edt_telugu_subsect.length() < 1 -> {
-//                lay_telugu_subsect.error = "Telugu subsect is required."
-//            }
-//            edt_vaishnavam.length() < 1 -> {
-//                lay_vaishnavam.error = "Vaishnavam is required."
-//            }
-//            edt_vaishnavam_telugu.length() < 1 -> {
-//                lay_vaishnavam_telugu.error = "Telugu Vaishnavam is required."
-//            }
-//            edt_madhava.length() < 1 -> {
-//                lay_madhava.error = "Madhava is required."
-//            }
-//            edt_gothram.length() < 1 -> {
-//                lay_gothram.error = "Gothram is required."
-//            }
-//            edt_rushi.length() < 1 -> {
-//                lay_rushi.error = "Rushi is required."
-//            }
-//            edt_pravara.length() < 3 -> {
-//                lay_pravara.error = "Pravara's minimum character is 3."
-//            }
-//            edt_soothram.length() < 1 -> {
-//                lay_soothram.error = "Soothram is required."
-//            }
-//            edt_vedham.length() < 1 -> {
-//                lay_vedham.error = "Vedaham is required."
-//            }
-//            poojaList.size == 0 -> {
-//                showErrorMessage(
-//                    lay_root,
-//                    "Poojas are required!, Please add a poojas!"
-//                )
-//            }
-//            edt_pondugal_name.length() < 3 -> {
-//                lay_pondugal_name.error = "Pondugal name's minimum character is 3."
-//            }
-//            edt_panchangam.length() < 1 -> {
-//                lay_panchangam.error = "Panchangam is required."
-//            }
-//            edt_thilakam.length() < 1 -> {
-//                lay_thilakam.error = "Thilakam is required."
-//            }
             else -> {
-//                val map: HashMap<String, HashMap<String, Any>> = HashMap()
-//                val mapData: HashMap<String, Any> = HashMap()
-//                mapData["nativity"] = edt_nativity.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["kulatheivam"] =
-//                    edt_kulatheivam.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["motherTongue"] =
-//                    edt_tongue.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["sampradhayam"] =
-//                    edt_sampradhayam.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["smarthaSubsect"] =
-//                    edt_subsect.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["smarthaSubsectTelugu"] =
-//                    edt_telugu_subsect.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["vaishnavam"] =
-//                    edt_vaishnavam.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["vaishnavamTelugu"] =
-//                    edt_vaishnavam_telugu.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["madhava"] = edt_madhava.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["gothram"] = edt_gothram.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["rushi"] = edt_rushi.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["pravara"] = edt_pravara.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["soothram"] = edt_soothram.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["vedham"] = edt_vedham.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["poojas"] = poojaList
-//                mapData["pondugalName"] =
-//                    edt_pondugal_name.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["panchangam"] =
-//                    edt_panchangam.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["thilakam"] = edt_thilakam.text.toString().toLowerCase(Locale.getDefault())
-//                map["familyInfo"] = mapData
-
                 val familyInfo = FamilyInfo(
                     nativity = edt_nativity.text.toString().toLowerCase(Locale.getDefault()),
                     kulatheivam = edt_kulatheivam.text.toString().toLowerCase(Locale.getDefault()),
@@ -1000,8 +902,18 @@ class AddFamilyInfo : AppCompatActivity() {
         if (internet!!.checkMobileInternetConn(this@AddFamilyInfo)) {
             try {
                 Log.e("familyInfo", familyInfo.toString())
-                val family = RetrofitClient.instanceClient.family(familyInfo = familyInfo)
-                family.enqueue(
+                family = if (userId != null) {
+                    RetrofitClient.instanceClient.family(
+                        id = userId!!,
+                        familyInfo = familyInfo
+                    )
+                } else {
+                    RetrofitClient.instanceClient.family(
+                        id = getData("user_id", applicationContext).toString(),
+                        familyInfo = familyInfo
+                    )
+                }
+                family!!.enqueue(
                     RetrofitWithBar(this@AddFamilyInfo, object : Callback<FamilyDto> {
                         @SuppressLint("SimpleDateFormat")
                         @RequiresApi(Build.VERSION_CODES.O)

@@ -74,7 +74,7 @@
 
     <string-array name="sampradhayam">
         <item>Smartha</item>
-        <item>Smartha (telugu)</item>
+        <item>Smartha subsect (telugu)</item>
         <item>Shree vaishnavam</item>
         <item>Shree vaishnavam (telugu)</item>
         <item>Madhva (kannada)</item>
@@ -91,10 +91,10 @@
     </string-array>
 
     <string-array name="telugu_subsect">
-        <item>Bruhacharanam</item>
-        <item>Vadamal</item>
-        <item>Vathimal</item>
-        <item>Ashta sahasram</item>
+        <item>Velnadu</item>
+        <item>Molaganadu</item>
+        <item>Thelungani</item>
+        <item>Niyogi</item>
         <item>Other</item>
     </string-array>
 
@@ -207,6 +207,7 @@
     <string-array name="thithi_relationship">
         <item>Pithru</item>
         <item>Mathru</item>
+        <item>Other</item>
     </string-array>
 
     <string-array name="masam_sauramanam">
@@ -271,9 +272,9 @@
 
     <string-array name="thayir_pachchadi">
         <item>Vazhaithandu</item>
-        <item>Vellarika</item>
-        <item>Sundakka</item>
-        <item>Pudalanga</item>
+        <item>Vellarikkai</item>
+        <item>Sundakkai</item>
+        <item>Pudalangai</item>
         <item>Other</item>
     </string-array>
 
@@ -285,20 +286,20 @@
     </string-array>
 
     <string-array name="kari">
-        <item>Vazhakka</item>
-        <item>Pagarka</item>
+        <item>Vazhaikkai</item>
+        <item>Pagarkai</item>
         <item>Seppam kizhangu</item>
-        <item>Avaraka</item>
-        <item>Koththavaranga</item>
-        <item>Vazhathandu</item>
+        <item>Avaraikkai</item>
+        <item>Koththavarangai</item>
+        <item>Vazhaiththandu</item>
         <item>Pudalanga</item>
         <item>Palamasu</item>
         <item>Other</item>
     </string-array>
 
     <string-array name="puli_kuttu">
-        <item>Pagarka</item>
-        <item>Karnakizhangu</item>
+        <item>Pagarkai</item>
+        <item>Karunaikkizhangu</item>
         <item>Seppam kizhangu</item>
         <item>Other</item>
     </string-array>
@@ -306,7 +307,7 @@
     <string-array name="morkuzhambu">
         <item>Seppam kizhangu</item>
         <item>Vadai</item>
-        <item>Vazhathandu</item>
+        <item>Vazhaiththandu</item>
         <item>Other</item>
     </string-array>
 
@@ -316,10 +317,10 @@
     </string-array>
 
     <string-array name="poruchchakuttu">
-        <item>Pudalanga</item>
-        <item>Avaraka</item>
-        <item>Sundakka</item>
-        <item>Koththavaranga</item>
+        <item>Pudalangai</item>
+        <item>Avarakkai</item>
+        <item>Sundakkai</item>
+        <item>Koththavarangai</item>
         <item>Other</item>
     </string-array>
 
@@ -346,22 +347,22 @@
     </string-array>
 
     <string-array name="uruga">
-        <item>Manga</item>
-        <item>Manga inji</item>
-        <item>Narthanga</item>
+        <item>Mangai</item>
+        <item>Mangai inji</item>
+        <item>Narthangai</item>
         <item>Other</item>
     </string-array>
 
     <string-array name="pazhangal">
         <item>Mambazham</item>
-        <item>Vazhapazham</item>
+        <item>Vazhaipazham</item>
         <item>Palapazham</item>
         <item>Other</item>
     </string-array>
 
     <string-array name="samayal_type">
-        <item>Thenga, Pachcha milagay</item>
-        <item>Milagu, Jeragam</item>
+        <item>Thengai, pachcha milagai</item>
+        <item>Milagu, jeeragam</item>
         <item>Other</item>
     </string-array>
 

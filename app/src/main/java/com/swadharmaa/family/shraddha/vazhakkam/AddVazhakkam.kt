@@ -20,9 +20,10 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.swadharmaa.R
-import com.swadharmaa.family.FamilyDto
 import com.swadharmaa.family.FamilyData
+import com.swadharmaa.family.FamilyDto
 import com.swadharmaa.family.Vazhakkam
+import com.swadharmaa.general.getData
 import com.swadharmaa.general.sessionExpired
 import com.swadharmaa.general.showErrorMessage
 import com.swadharmaa.general.showMessage
@@ -44,6 +45,8 @@ class AddVazhakkam : AppCompatActivity() {
         .add(KotlinJsonAdapterFactory())
         .build()
     var internet: InternetDetector? = null
+    private var family: Call<FamilyDto>? = null
+    var userId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +59,7 @@ class AddVazhakkam : AppCompatActivity() {
             onBackPressed()
         }
 
+        userId = intent.getStringExtra(getString(R.string.userId))
         try {
             val data = intent.getStringExtra(getString(R.string.data))
             if (data != null) {
@@ -78,6 +82,9 @@ class AddVazhakkam : AppCompatActivity() {
                 )
                 edt_pundra_dharanam.setText(
                     familyData.shraardhaInfo!!.shraddha_vazhakkam?.pundraDharanam.toString()
+                )
+                edt_other.setText(
+                    familyData.shraardhaInfo!!.shraddha_vazhakkam?.other.toString()
                 )
 
             }
@@ -362,44 +369,12 @@ class AddVazhakkam : AppCompatActivity() {
     }
 
     private fun update() {
-
         lay_koorcham.error = null
-//        lay_tharpana_koorcham.error = null
-//        lay_pindam_count.error = null
-//        lay_krusaram.error = null
-//        lay_pundra_dharanam.error = null
-
         when {
             edt_koorcham.length() < 1 -> {
                 lay_koorcham.error = "Koorcham is required."
             }
-//            edt_tharpana_koorcham.length() < 1 -> {
-//                lay_tharpana_koorcham.error = "Tharpana koorcham is required."
-//            }
-//            edt_pindam_count.length() < 1 -> {
-//                lay_pindam_count.error = "Pindam is required."
-//            }
-//            edt_krusaram.length() < 1 -> {
-//                lay_krusaram.error = "Krusaram is required."
-//            }
-//            edt_pundra_dharanam.length() < 1 -> {
-//                lay_pundra_dharanam.error = "Pundra dharanam is required."
-//            }
             else -> {
-
-//                val map: HashMap<String, HashMap<String, HashMap<String, Any>>> = HashMap()
-//                val mapVazhakkam: HashMap<String, HashMap<String, Any>> = HashMap()
-//                val mapData: HashMap<String, Any> = HashMap()
-//                mapData["koorcham"] = edt_koorcham.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["tharpanaKoorcham"] =
-//                    edt_tharpana_koorcham.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["pindamCount"] =
-//                    edt_pindam_count.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["krusaram"] = edt_krusaram.text.toString().toLowerCase(Locale.getDefault())
-//                mapData["pundraDharanam"] =
-//                    edt_pundra_dharanam.text.toString().toLowerCase(Locale.getDefault())
-//                mapVazhakkam["vazhakkam"] = mapData
-//                map["shraardhaInfo"] = mapVazhakkam
                 val vazhakkam = Vazhakkam(
                     koorcham = edt_koorcham.text.toString().toLowerCase(Locale.getDefault()),
                     tharpanaKoorcham = edt_tharpana_koorcham.text.toString()
@@ -407,7 +382,8 @@ class AddVazhakkam : AppCompatActivity() {
                     pindamCount = edt_pindam_count.text.toString().toLowerCase(Locale.getDefault()),
                     krusaram = edt_krusaram.text.toString().toLowerCase(Locale.getDefault()),
                     pundraDharanam = edt_pundra_dharanam.text.toString()
-                        .toLowerCase(Locale.getDefault())
+                        .toLowerCase(Locale.getDefault()),
+                    other = edt_other.text.toString().toLowerCase(Locale.getDefault())
                 )
                 vazhakkam(vazhakkam)
             }
@@ -418,8 +394,18 @@ class AddVazhakkam : AppCompatActivity() {
         if (internet!!.checkMobileInternetConn(this@AddVazhakkam)) {
             try {
                 Log.e("body", data.toString())
-                val vazhakkam = RetrofitClient.instanceClient.vazhakkam(data)
-                vazhakkam.enqueue(
+                family = if (userId != null) {
+                    RetrofitClient.instanceClient.vazhakkam(
+                        id = userId!!,
+                        vazhakkam = data
+                    )
+                } else {
+                    RetrofitClient.instanceClient.vazhakkam(
+                        id = getData("user_id", applicationContext).toString(),
+                        vazhakkam = data
+                    )
+                }
+                family!!.enqueue(
                     RetrofitWithBar(this@AddVazhakkam, object : Callback<FamilyDto> {
                         @SuppressLint("SimpleDateFormat")
                         @RequiresApi(Build.VERSION_CODES.O)

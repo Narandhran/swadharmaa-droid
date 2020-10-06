@@ -31,13 +31,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="250dp">
 
-                    <com.github.siyamed.shapeimageview.mask.PorterShapeImageView
+                    <androidx.appcompat.widget.AppCompatImageView
                         android:id="@+id/img_category"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_gravity="center"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/img_placeholder"
+                        android:src="@drawable/img_place_holder"
                         app:siShape="@drawable/bgtop_rounded" />
 
                     <com.google.android.material.textview.MaterialTextView
