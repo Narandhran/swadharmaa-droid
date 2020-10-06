@@ -13,7 +13,7 @@
         android:layout_marginTop="5dp"
         android:fontFamily="@font/lato_bold"
         android:padding="5dp"
-        android:text="@string/thanks_for_you_support_we_really_appreciate_your_work"
+        android:text="@string/msg_thanks"
         android:textColor="@color/theme_dark_grey"
         android:textSize="16sp"
         tools:targetApi="jelly_bean" />

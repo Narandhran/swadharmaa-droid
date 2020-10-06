@@ -29,7 +29,6 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.squareup.picasso.Picasso
 import com.swadharmaa.BuildConfig
-import com.swadharmaa.Home
 import com.swadharmaa.R
 import com.swadharmaa.book.AddBook
 import com.swadharmaa.category.AddCategory
@@ -40,6 +39,7 @@ import com.swadharmaa.server.RetrofitClient
 import com.swadharmaa.server.RetrofitWithBar
 import kotlinx.android.synthetic.main.act_profile.*
 import kotlinx.android.synthetic.main.dialog_amount.*
+import kotlinx.android.synthetic.main.dialog_thanks.*
 import org.apache.commons.lang3.StringUtils
 import org.json.JSONObject
 import retrofit2.Call
@@ -131,6 +131,12 @@ class Profile : AppCompatActivity(), PaymentResultWithDataListener {
             startActivity(Intent(this@Profile, About::class.java))
         }
 
+        val root = intent.getStringExtra(getString(R.string.data))
+        if (root != null) {
+            if (root == getString(R.string.profile)) {
+                donate()
+            }
+        }
         lay_donate.setOnClickListener {
             donate()
         }
@@ -290,7 +296,6 @@ class Profile : AppCompatActivity(), PaymentResultWithDataListener {
             }
         })
         return profileData
-
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
@@ -688,14 +693,20 @@ class Profile : AppCompatActivity(), PaymentResultWithDataListener {
                             when {
                                 response.code() == 200 -> {
                                     if (response.body()?.status == 200) {
-                                        Handler().postDelayed({
-                                            startActivity(Intent(this@Profile, Home::class.java))
-                                            this@Profile.overridePendingTransition(
-                                                R.anim.fade_in,
-                                                R.anim.fade_out
-                                            )
-                                            finish()
-                                        }, 200)
+                                        val dialog = Dialog(this@Profile, R.style.DialogTheme)
+                                        dialog.setContentView(R.layout.dialog_thanks)
+                                        dialog.btn_ok.setOnClickListener {
+                                            dialog.cancel()
+                                        }
+                                        dialog.show()
+//                                        Handler().postDelayed({
+//                                            startActivity(Intent(this@Profile, Home::class.java))
+//                                            this@Profile.overridePendingTransition(
+//                                                R.anim.fade_in,
+//                                                R.anim.fade_out
+//                                            )
+//                                            finish()
+//                                        }, 200)
                                     } else {
                                         showErrorMessage(
                                             layout_refresh,

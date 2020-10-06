@@ -158,8 +158,10 @@
     <string name="see_all">See all</string>
     <string name="next">Next</string>
     <string name="amount">Amount</string>
-    <string name="thanks_for_you_support_we_really_appreciate_your_work">Thanks for you support. We really appreciate your work.</string>
-    <string name="razorpay_key">rzp_test_TqKfdz25XUCI9M</string>
+    <string name="msg_thanks">Thank you for helping us out, We really appreciate your kindness and support.</string>
+    <string name="razorpay_key">rzp_live_D2mNOwytBENsMa</string>
     <string name="about_us">About Us</string>
+    <string name="ok">OK</string>
+    <string name="payment_successful">Payment successful!</string>
 
 </resources>

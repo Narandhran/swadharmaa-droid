@@ -13,8 +13,8 @@ android {
         applicationId "com.swadharmaa"
         minSdkVersion 19
         targetSdkVersion 29
-        versionCode 7
-        versionName "1.7.0"
+        versionCode 8
+        versionName "1.8.0"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         useLibrary 'org.apache.http.legacy'

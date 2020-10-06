@@ -458,7 +458,7 @@ class AddPersonal : AppCompatActivity() {
                     sharma = edt_sharma.text.toString().toLowerCase(Locale.getDefault()),
                     dateOfBirth = edt_dob.text.toString().toLowerCase(Locale.getDefault()),
                     timeOfBirth = edt_time.text.toString().toLowerCase(Locale.getDefault()),
-                    placeOfBirth = edt_time.text.toString().toLowerCase(Locale.getDefault()),
+                    placeOfBirth = edt_place.text.toString().toLowerCase(Locale.getDefault()),
                     rashi = edt_rashi.text.toString().toLowerCase(Locale.getDefault()),
                     nakshathram = edt_nakshathram.text.toString().toLowerCase(Locale.getDefault()),
                     padham = edt_padham.text.toString().toLowerCase(Locale.getDefault()),
